@@ -25,9 +25,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "spi_flash.h"
 #include "debug.h"
-#include "service/sfud/inc/sfud.h"
+#include "spi_flash.h"
+#include "sfud.h"
+#include "lfs.h"
+#include "lfs_port.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -117,23 +119,71 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
 
-  spi_flash_init();
+  log_rtt_println("=== LittleFS Test ===");
 
-  uint16_t dev_id = spi_flash_read_id();
-  log_rtt_printf("Device ID: 0x%04X\r\n", dev_id);
+  lfs_port_init();
 
-  uint8_t mf_id, type_id, capacity_id;
-  int rc = spi_flash_read_jedec_id(&mf_id, &type_id, &capacity_id);
-  if (rc == 0) {
-    log_rtt_printf("JEDEC ID: MF=0x%02X  Type=0x%02X  Cap=0x%02X\r\n",
-                   mf_id, type_id, capacity_id);
-  } else {
-    log_rtt_println("Flash JEDEC ID read FAILED!");
+  lfs_t lfs;
+  int err = lfs_mount(&lfs, &g_lfs_cfg);
+  if (err) {
+    log_rtt_println("Mount failed, formatting...");
+    err = lfs_format(&lfs, &g_lfs_cfg);
+    if (err) {
+      log_rtt_printf("Format FAILED: %d\r\n", err);
+      for(;;) {}
+    }
+    err = lfs_mount(&lfs, &g_lfs_cfg);
+  }
+  if (err) {
+    log_rtt_printf("Mount FAILED: %d\r\n", err);
+    for(;;) {};
+  }
+  log_rtt_println("LFS mounted OK");
+
+  const char *msg = "Hello from LittleFS on W25Q64!";
+  lfs_file_t file;
+
+  err = lfs_file_open(&lfs, &file, "test.txt", LFS_O_RDWR | LFS_O_CREAT);
+  if (err) {
+    log_rtt_printf("File open FAILED: %d\r\n", err);
+    for(;;) {};
+  }
+  log_rtt_println("File opened: test.txt");
+
+  lfs_ssize_t w = lfs_file_write(&lfs, &file, msg, strlen(msg));
+  if (w < 0) {
+    log_rtt_printf("File write FAILED: %d\r\n", (int)w);
+    for(;;) {};
+  }
+  log_rtt_printf("Written: %d bytes\r\n", (int)w);
+
+  err = lfs_file_close(&lfs, &file);
+  if (err) {
+    log_rtt_printf("File close FAILED: %d\r\n", err);
+    for(;;) {};
+  }
+  log_rtt_println("File closed OK");
+
+  err = lfs_file_open(&lfs, &file, "test.txt", LFS_O_RDONLY);
+  if (err) {
+    log_rtt_printf("File re-open FAILED: %d\r\n", err);
+    for(;;) {};
   }
 
-  sfud_err ret = sfud_init();
-  if (ret != SFUD_SUCCESS) {
-    log_rtt_printf("SFUD initialization FAILED!\r\n");
+  char buf[64] = {0};
+  lfs_ssize_t r = lfs_file_read(&lfs, &file, buf, sizeof(buf) - 1);
+  if (r < 0) {
+    log_rtt_printf("File read FAILED: %d\r\n", (int)r);
+    for(;;) {};
+  }
+  log_rtt_printf("Read back: %d bytes → \"%s\"\r\n", (int)r, buf);
+
+  err = lfs_file_close(&lfs, &file);
+
+  if (strcmp(buf, msg) == 0) {
+    log_rtt_println("=== LittleFS Test PASSED ===");
+  } else {
+    log_rtt_println("=== LittleFS Test FAILED (data mismatch) ===");
   }
 
   /* Infinite loop */
