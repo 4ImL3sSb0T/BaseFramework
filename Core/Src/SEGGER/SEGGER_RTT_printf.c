@@ -592,9 +592,15 @@ int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pPa
           } while (BufferDesc.ReturnValue >= 0);
         }
         break;
-      case 'f':
-        v = va_arg(*pParamList, double);
-        _PrintFloat(&BufferDesc, v, NumDigits > 0u ? NumDigits : 6u, FieldWidth, FormatFlags);
+      case 'f': {
+        double f;
+        f = va_arg(*pParamList, double);
+        _PrintFloat(&BufferDesc, f, NumDigits > 0u ? NumDigits : 6u, FieldWidth, FormatFlags);
+        break;
+      }
+      case 'p':
+        v = va_arg(*pParamList, int);
+        _PrintUnsigned(&BufferDesc, (unsigned)v, 16u, 8u, 8u, 0u);
         break;
       case '%':
         _StoreChar(&BufferDesc, '%');
