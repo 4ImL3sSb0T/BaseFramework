@@ -24,7 +24,7 @@
 #if !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny84__)
 
 #include "Adafruit_GFX.h"
-#include <SPI.h>
+#include "SpiWrapper.h"
 
 // HARDWARE CONFIG ---------------------------------------------------------
 
@@ -201,7 +201,7 @@ public:
 
   // Subclass' begin() function invokes this to initialize hardware.
   // freq=0 to use default SPI speed. spiMode must be one of the SPI_MODEn
-  // values defined in SPI.h, which are NOT the same as 0 for SPI_MODE0,
+  // values defined in SpiWrapper.h, which are NOT the same as 0 for SPI_MODE0,
   // 1 for SPI_MODE1, etc...use ONLY the SPI_MODEn defines! Only!
   // Name is outdated (interface may be parallel) but for compatibility:
   void initSPI(uint32_t freq = 0, uint8_t spiMode = SPI_MODE0);

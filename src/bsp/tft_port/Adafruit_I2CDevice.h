@@ -1,0 +1,3 @@
+#ifndef _ADAFRUIT_I2CDEVICE_H_
+#define _ADAFRUIT_I2CDEVICE_H_
+#endif

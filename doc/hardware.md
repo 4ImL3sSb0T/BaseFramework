@@ -30,12 +30,16 @@
 | 外设 | 实例 | 引脚 | 参数 | 中断/DMA |
 |------|------|------|------|----------|
 | USART1 | TX: PA9, RX: PA10 | 115200-8-N-1, 无流控, FIFO已禁用 | DMA1_Stream1 (RX, Circular), DMA1_Stream2 (TX, Normal), USART1_IRQn (pri=5) |
+| SPI1 | PB3 (SCK), PB5 (MOSI) | Master, 6MHz (PLL1Q=96MHz÷16), CPOL=1 CPHA=1, MSB, 8-bit, 仅发送(1-Line), 软件 NSS | 外接 ST7735 TFT LCD |
 | SPI2 | PB13 (SCK), PB14 (MISO), PB15 (MOSI), PB12 (CS) | Master, 48 Mbps, CPOL=1 CPHA=1, MSB, 8-bit, 软件 NSS | 外接 SPI Flash，CS 由 PB12 GPIO 控制 |
 | TIM17 | 内部 | HAL 时基（1ms） | TIM17_IRQn → HAL_IncTick() |
 | GPIO | PC0 | 红色 LED（推挽输出） | — |
 | GPIO | PC1 | 绿色 LED（推挽输出） | — |
 | GPIO | PC2 | 蓝色 LED（推挽输出） | — |
 | GPIO | PC13 | 用户按键（输入） | — |
+| GPIO | PB4 | TFT DC（推挽输出） | ST7735 数据/命令选择 |
+| GPIO | PB6 | TFT CS（推挽输出） | ST7735 片选 |
+| GPIO | PB7 | TFT RST（推挽输出） | ST7735 复位 |
 | DMA | DMA1_Stream1 | USART1_RX（外设→内存，循环模式） | — |
 | DMA | DMA1_Stream2 | USART1_TX（内存→外设，普通模式） | — |
 
@@ -45,8 +49,11 @@
 |------|------|------|------|
 | PA9 | USART1_TX | AF7 (推挽) | UART 发送 |
 | PA10 | USART1_RX | AF7 (推挽) | UART 接收 |
-| PB6 | I2C1_SCL | AF4 (开漏) | I2C 时钟 |
-| PB7 | I2C1_SDA | AF4 (开漏) | I2C 数据 |
+| PB3 | SPI1_SCK | AF5 (推挽) | ST7735 TFT 时钟 |
+| PB4 | GPIO_Output | 推挽 | ST7735 TFT DC (数据/命令) |
+| PB5 | SPI1_MOSI | AF5 (推挽) | ST7735 TFT 数据 |
+| PB6 | GPIO_Output | 推挽 | ST7735 TFT CS (片选) |
+| PB7 | GPIO_Output | 推挽 | ST7735 TFT RST (复位) |
 | PC0 | GPIO_Output | 推挽 | 红色 LED |
 | PC1 | GPIO_Output | 推挽 | 绿色 LED |
 | PC2 | GPIO_Output | 推挽 | 蓝色 LED |

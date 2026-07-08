@@ -148,7 +148,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* USER CODE BEGIN SPI1_MspInit 1 */
-
+  /* ST7735 LCD: PB3(SCK)/PB5(MOSI) need very-high GPIO slew rate for 15MHz SPI */
+  GPIOB->OSPEEDR |= (3U << GPIO_OSPEEDR_OSPEED3_Pos) | (3U << GPIO_OSPEEDR_OSPEED5_Pos);
   /* USER CODE END SPI1_MspInit 1 */
   }
   else if(spiHandle->Instance==SPI2)

@@ -338,7 +338,7 @@
               <MiscControls />
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H750xx,LFS_DEFINES=lfs_armclang_port.h</Define>
               <Undefine />
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/ST/ARM/DSP/Inc;../Core/Inc/SEGGER;../src;../src/service/sfud/inc;../src/service/lfs;../src/bsp/spi_flash;../src/bsp/debug</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/ST/ARM/DSP/Inc;../Core/Inc/SEGGER;../src;../src/service/sfud/inc;../src/service/lfs;../src/bsp/spi_flash;../src/bsp/debug;../src/bsp/tft_port;../src/service/gfx;../src/service/gfx/Fonts;../src/driver/st7735</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -830,6 +830,66 @@
               <FileName>lfs_port.c</FileName>
               <FileType>1</FileType>
               <FilePath>../src/service/lfs/lfs_port.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/TFT_Port</GroupName>
+          <Files>
+            <File>
+              <FileName>Arduino.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/bsp/tft_port/Arduino.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Print.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/bsp/tft_port/Print.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>SpiWrapper.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/bsp/tft_port/SpiWrapper.cpp</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/GFX</GroupName>
+          <Files>
+            <File>
+              <FileName>Adafruit_GFX.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/service/gfx/Adafruit_GFX.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Adafruit_SPITFT.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/service/gfx/Adafruit_SPITFT.cpp</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/ST7735</GroupName>
+          <Files>
+            <File>
+              <FileName>Adafruit_ST77xx.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/driver/st7735/Adafruit_ST77xx.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Adafruit_ST7735.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/driver/st7735/Adafruit_ST7735.cpp</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/App</GroupName>
+          <Files>
+            <File>
+              <FileName>tft_demo.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/app/tft_demo.cpp</FilePath>
             </File>
           </Files>
         </Group>

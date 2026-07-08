@@ -1,9 +1,15 @@
 #ifndef _ADAFRUIT_GFX_H
 #define _ADAFRUIT_GFX_H
 
-#if ARDUINO >= 100
+// Force Arduino.h to be included before the ARDUINO version check.
+// On STM32, Adafruit_GFX.cpp includes this header directly, so ARDUINO
+// is not yet defined. Pre-include Arduino.h unconditionally to avoid
+// falling through to the WProgram.h branch.
 #include "Arduino.h"
 #include "Print.h"
+
+#if ARDUINO >= 100
+// Already included above
 #else
 #include "WProgram.h"
 #endif

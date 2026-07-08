@@ -1,0 +1,3 @@
+#ifndef _ADAFRUIT_SPIDEVICE_H_
+#define _ADAFRUIT_SPIDEVICE_H_
+#endif

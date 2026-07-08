@@ -30,7 +30,7 @@
 #include "wiring_private.h"
 #endif
 #endif
-#include <SPI.h>
+#include "SpiWrapper.h"
 
 #define SPI_DEFAULT_FREQ 32000000 ///< Default SPI data clock frequency
 

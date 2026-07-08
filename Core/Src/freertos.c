@@ -30,6 +30,11 @@
 #include "sfud.h"
 #include "lfs.h"
 #include "lfs_port.h"
+#ifdef __cplusplus
+extern "C" void tft_demo_task(void);
+#else
+extern void tft_demo_task(void);
+#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -123,6 +128,9 @@ void StartDefaultTask(void *argument)
 
   lfs_port_init();
   log_rtt_println("Port init OK");
+
+  tft_demo_task();
+  log_rtt_println("TFT demo init OK");
 
   lfs_t lfs;
   int err = lfs_mount(&lfs, &g_lfs_cfg);
