@@ -34,16 +34,9 @@ uint8_t spi_flash_read_write_byte(uint8_t tx_data) {
 
 int spi_flash_write_read(const uint8_t *write_buf, size_t write_size,
                          uint8_t *read_buf, size_t read_size) {
-    if (read_size == 0) {
-        spi_flash_cs_low();
-        HAL_StatusTypeDef st = HAL_SPI_Transmit(&hspi2, (uint8_t *)write_buf,
-                                                 write_size, SPI_TIMEOUT);
-        spi_flash_cs_high();
-        return (st == HAL_OK) ? 0 : -1;
-    }
-
-    uint8_t tx[write_size + read_size];
-    uint8_t rx[write_size + read_size];
+    size_t total = write_size + read_size;
+    uint8_t tx[total];
+    uint8_t rx[total];
 
     for (size_t i = 0; i < write_size; i++) {
         tx[i] = write_buf[i];
@@ -53,9 +46,7 @@ int spi_flash_write_read(const uint8_t *write_buf, size_t write_size,
     }
 
     spi_flash_cs_low();
-    HAL_StatusTypeDef st = HAL_SPI_TransmitReceive(&hspi2, tx, rx,
-                                                    write_size + read_size,
-                                                    SPI_TIMEOUT);
+    HAL_StatusTypeDef st = HAL_SPI_TransmitReceive(&hspi2, tx, rx, total, SPI_TIMEOUT);
     spi_flash_cs_high();
 
     if (st != HAL_OK) return -1;
