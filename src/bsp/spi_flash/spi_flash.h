@@ -28,6 +28,12 @@ int  spi_flash_write_read(const uint8_t *write_buf, size_t write_size,
 
 void spi_flash_init(void);
 
+/**
+ * Read JEDEC ID (command 0x9F). Returns 3 bytes: mf_id, type_id, capacity_id.
+ * On success returns 0, on failure returns -1.
+ */
+int  spi_flash_read_jedec_id(uint8_t *mf_id, uint8_t *type_id, uint8_t *capacity_id);
+
 #ifdef __cplusplus
 }
 #endif

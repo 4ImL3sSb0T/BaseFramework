@@ -79,3 +79,17 @@ int spi_flash_write_read(const uint8_t *write_buf, size_t write_size,
 void spi_flash_init(void) {
     spi_flash_cs_high();   /* idle high */
 }
+
+/* ── JEDEC ID read ──────────────────────────────────────────────────── */
+
+int spi_flash_read_jedec_id(uint8_t *mf_id, uint8_t *type_id, uint8_t *capacity_id) {
+    uint8_t cmd = 0x9F;
+    uint8_t id[3];
+    int rc = spi_flash_write_read(&cmd, 1, id, 3);
+    if (rc == 0) {
+        *mf_id      = id[0];
+        *type_id    = id[1];
+        *capacity_id = id[2];
+    }
+    return rc;
+}

@@ -25,7 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "spi_flash.h"
+#include "debug.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -114,10 +115,22 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
+
+  spi_flash_init();
+
+  uint8_t mf_id, type_id, capacity_id;
+  int rc = spi_flash_read_jedec_id(&mf_id, &type_id, &capacity_id);
+  if (rc == 0) {
+    log_rtt_printf("JEDEC ID: MF=0x%02X  Type=0x%02X  Cap=0x%02X\r\n",
+                   mf_id, type_id, capacity_id);
+  } else {
+    log_rtt_println("Flash ID read FAILED!");
+  }
+
   /* Infinite loop */
   for(;;)
   {
-		HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
+    HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
     osDelay(500);
   }
   /* USER CODE END StartDefaultTask */
