@@ -55,7 +55,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, RED_Pin|GREEN_Pin|BLUE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, FLASH_CS_Pin|TFT_DC_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, FLASH_CS_Pin|TFT_DC_Pin|TFT_CS_Pin|TFT_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : USR_KEY_Pin */
   GPIO_InitStruct.Pin = USR_KEY_Pin;
@@ -70,8 +70,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : FLASH_CS_Pin TFT_DC_Pin */
-  GPIO_InitStruct.Pin = FLASH_CS_Pin|TFT_DC_Pin;
+  /*Configure GPIO pins : FLASH_CS_Pin TFT_DC_Pin TFT_CS_Pin TFT_RST_Pin */
+  GPIO_InitStruct.Pin = FLASH_CS_Pin|TFT_DC_Pin|TFT_CS_Pin|TFT_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
