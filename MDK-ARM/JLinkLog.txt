@@ -1,0 +1,194 @@
+T554C 000:235.355   SEGGER J-Link V9.42 Log File
+T554C 000:235.491   DLL Compiled: May  6 2026 12:25:27
+T554C 000:235.496   Logging started @ 2026-07-08 08:02
+T554C 000:235.501   Process: C:\Users\yuang\AppData\Local\Keil_v5\UV4\UV4.exe
+T554C 000:235.512 - 235.506ms 
+T554C 000:235.521 JLINK_SetWarnOutHandler(...)
+T554C 000:235.526 - 0.007ms 
+T554C 000:235.534 JLINK_OpenEx(...)
+T554C 000:240.264   Firmware: J-Link V9 compiled May  7 2021 16:26:12
+T554C 000:242.360   Firmware: J-Link V9 compiled May  7 2021 16:26:12
+T554C 000:242.464   Decompressing FW timestamp took 82 us
+T554C 000:251.312   Hardware: V9.40
+T554C 000:251.342   S/N: 69401661
+T554C 000:251.358   OEM: SEGGER
+T554C 000:251.374   Feature(s): RDI, GDB, FlashDL, FlashBP, JFlash
+T554C 000:253.332   Bootloader: (FW returned invalid version)
+T554C 000:255.495   TELNET listener socket opened on port 19021
+T554C 000:255.649   WEBSRV WEBSRV_Init(): Starting webserver thread(s)
+T554C 000:255.791   WEBSRV Webserver running on local port 19080
+T554C 000:255.977   Looking for J-Link GUI Server exe at: C:\Users\yuang\AppData\Local\Keil_v5\ARM\Segger\JLinkGUIServer.exe
+T554C 000:256.140   Looking for J-Link GUI Server exe at: C:\Program Files\SEGGER\JLink_V942\JLinkGUIServer.exe
+T554C 000:256.188   Forking J-Link GUI Server: C:\Program Files\SEGGER\JLink_V942\JLinkGUIServer.exe
+T554C 000:285.741   J-Link GUI Server info: "J-Link GUI server V9.42 "
+T554C 000:295.561 - 60.020ms returns "O.K."
+T554C 000:295.594 JLINK_GetEmuCaps()
+T554C 000:295.602 - 0.006ms returns 0xB9FF7BBF
+T554C 000:295.611 JLINK_TIF_GetAvailable(...)
+T554C 000:296.241 - 0.629ms 
+T554C 000:296.261 JLINK_SetErrorOutHandler(...)
+T554C 000:296.266 - 0.005ms 
+T554C 000:296.289 JLINK_ExecCommand("ProjectFile = "D:\Project\H750\BaseFramework\MDK-ARM\JLinkSettings.ini"", ...). 
+T554C 000:307.939   XML file found at: C:\Users\yuang\AppData\Roaming\SEGGER\JLinkDevices\ST\STM32H750VB\H7_W25Q64_BORING.xml
+T554C 000:308.643   C:\Users\yuang\AppData\Roaming\SEGGER\JLinkDevices\ST\STM32H750VB\H7_W25Q64_BORING.xml evaluated successfully.
+T554C 000:308.657     Device entry created:  STM32H750_W25Q64
+T554C 000:308.663       ChipInfo:
+T554C 000:308.672         Vendor:          ST
+T554C 000:308.680         Name:            STM32H750_W25Q64
+T554C 000:308.690         Core:            JLINK_CORE_CORTEX_M7
+T554C 000:308.699         WorkRAMAddr:     0x20000000
+T554C 000:308.707         WorkRAMSize:     0x00020000
+T554C 000:308.716       FlashBankInfo:
+T554C 000:308.724         Name:            W25Q64 QSPI
+T554C 000:308.732         BaseAddr:        0x90000000
+T554C 000:308.823         AlwaysPresent:   1
+T554C 000:308.833         LoaderInfo:
+T554C 000:308.841           Name:            W25Q64_QSPI
+T554C 000:308.849           MaxSize:         0x00800000
+T554C 000:308.858           Loader:          C:\Users\yuang\AppData\Roaming\SEGGER\JLinkDevices\ST\STM32H750VB\H7_W25Q64_BORING.FLM
+T554C 000:308.866           LoaderType:      FLASH_ALGO_TYPE_OPEN
+T554C 000:309.140   Ref file found at: C:\Users\yuang\AppData\Local\Keil_v5\ARM\Segger\JLinkDevices.ref
+T554C 000:309.240   REF file references invalid XML file: C:\Program Files\SEGGER\JLink_V942\JLinkDevices.xml
+T554C 000:309.581 - 13.293ms returns 0x00
+T554C 000:309.602 JLINK_ExecCommand("Device = STM32H750VBTx", ...). 
+T554C 000:309.803   Flash bank @ 0x08000000: SFL: Parsing sectorization info from ELF file
+T554C 000:309.813     FlashDevice.SectorInfo[0]: .SectorSize = 0x00020000, .SectorStartAddr = 0x00000000
+T554C 000:309.821   FlashBank @0x08000000: Sectorization info from SFL ELF file ignored because sectorization override from DLL / XML file is active.
+T554C 000:309.905   Flash bank @ 0x90000000: SFL: Parsing sectorization info from ELF file
+T554C 000:309.913     FlashDevice.SectorInfo[0]: .SectorSize = 0x00010000, .SectorStartAddr = 0x00000000
+T554C 000:317.337   Device "STM32H750VB" selected.
+T554C 000:317.982 - 8.378ms returns 0x00
+T554C 000:318.002   ERROR: Unknown command
+T554C 000:318.012 JLINK_GetHardwareVersion()
+T554C 000:318.018 - 0.006ms returns 94000
+T554C 000:318.055 JLINK_GetDLLVersion()
+T554C 000:318.060 - 0.005ms returns 94200
+T554C 000:318.066 JLINK_GetOEMString(...)
+T554C 000:318.073 JLINK_GetFirmwareString(...)
+T554C 000:318.079 - 0.005ms 
+T554C 000:318.089 JLINK_GetDLLVersion()
+T554C 000:318.094 - 0.005ms returns 94200
+T554C 000:318.100 JLINK_GetCompileDateTime()
+T554C 000:318.106 - 0.005ms 
+T554C 000:318.113 JLINK_GetFirmwareString(...)
+T554C 000:318.118 - 0.005ms 
+T554C 000:318.124 JLINK_GetHardwareVersion()
+T554C 000:318.130 - 0.005ms returns 94000
+T554C 000:318.136 JLINK_GetSN()
+T554C 000:318.141 - 0.005ms returns 69401661
+T554C 000:318.148 JLINK_GetOEMString(...)
+T554C 000:318.159 JLINK_TIF_Select(JLINKARM_TIF_SWD)
+T554C 000:320.643 - 2.486ms returns 0x00
+T554C 000:320.660 JLINK_HasError()
+T554C 000:320.675 JLINK_SetSpeed(5000)
+T554C 000:321.283 - 0.609ms 
+T554C 000:322.181 JLINK_HasError()
+T554C 000:322.211 JLINK_SetResetType(JLINKARM_RESET_TYPE_NORMAL)
+T554C 000:322.230 - 0.018ms returns JLINKARM_RESET_TYPE_NORMAL
+T554C 000:322.248 JLINK_Reset()
+T554C 000:322.831   ConfigTargetSettings() start
+T554C 000:322.847    J-Link Script File: Executing ConfigTargetSettings()
+T554C 000:322.866   ConfigTargetSettings() end - Took 20us
+T554C 000:322.875   InitTarget() start
+T554C 000:322.883    J-Link Script File: Executing InitTarget()
+T554C 000:323.438   SWD selected. Executing JTAG -> SWD switching sequence.
+T554C 000:327.756   DAP initialized successfully.
+T554C 000:354.026   InitTarget() end - Took 31.1ms
+T554C 000:355.571   Found SW-DP with ID 0x6BA02477
+T554C 000:360.243   DPIDR: 0x6BA02477
+T554C 000:360.256   CoreSight SoC-400 or earlier
+T554C 000:360.264   Scanning AP map to find all available APs
+T554C 000:363.259   AP[3]: Stopped AP scan as end of AP map has been reached
+T554C 000:363.278   AP[0]: AHB-AP (IDR: 0x84770001, ADDR: 0x00000000)
+T554C 000:363.287   AP[1]: AHB-AP (IDR: 0x84770001, ADDR: 0x01000000)
+T554C 000:363.295   AP[2]: APB-AP (IDR: 0x54770002, ADDR: 0x02000000)
+T554C 000:363.305   Iterating through AP map to find AHB-AP to use
+T554C 000:364.973   AP[0]: Core found
+T554C 000:364.987   AP[0]: AHB-AP ROM base: 0xE00FE000
+T554C 000:365.845   CPUID register: 0x411FC271. Implementer code: 0x41 (ARM)
+T554C 000:366.712   Cache: L1 I/D-cache present
+T554C 000:366.727   Found Cortex-M7 r1p1, Little endian.
+T554C 000:367.937   -- Max. mem block: 0x00010E60
+T554C 000:370.127   CPU_ReadMem(4 bytes @ 0xE000EDF0)
+T554C 000:370.884   CPU_ReadMem(4 bytes @ 0xE0002000)
+T554C 000:371.719   FPUnit: 8 code (BP) slots and 0 literal slots
+T554C 000:371.733   CPU_ReadMem(4 bytes @ 0xE000EDFC)
+T554C 000:372.456   CPU_WriteMem(4 bytes @ 0xE000EDFC)
+T554C 000:373.248   CPU_ReadMem(4 bytes @ 0xE0001000)
+T554C 000:373.969   CPU_WriteMem(4 bytes @ 0xE0001000)
+T554C 000:374.734   CPU_ReadMem(4 bytes @ 0xE000ED88)
+T554C 000:375.486   CPU_WriteMem(4 bytes @ 0xE000ED88)
+T554C 000:376.376   CPU_ReadMem(4 bytes @ 0xE000ED88)
+T554C 000:377.096   CPU_WriteMem(4 bytes @ 0xE000ED88)
+T554C 000:377.861   CoreSight components:
+T554C 000:377.873   ROMTbl[0] @ E00FE000
+T554C 000:377.882   CPU_ReadMem(64 bytes @ 0xE00FE000)
+T554C 000:378.948   CPU_ReadMem(32 bytes @ 0xE00FFFE0)
+T554C 000:379.874   [0][0]: E00FF000 CID B105100D PID 000BB4C7 ROM Table
+T554C 000:379.888   ROMTbl[1] @ E00FF000
+T554C 000:379.896   CPU_ReadMem(64 bytes @ 0xE00FF000)
+T554C 000:380.927   CPU_ReadMem(32 bytes @ 0xE000EFE0)
+T554C 000:381.867   [1][0]: E000E000 CID B105E00D PID 000BB00C SCS-M7
+T554C 000:381.886   CPU_ReadMem(32 bytes @ 0xE0001FE0)
+T554C 000:382.906   [1][1]: E0001000 CID B105E00D PID 000BB002 DWT
+T554C 000:382.919   CPU_ReadMem(32 bytes @ 0xE0002FE0)
+T554C 000:383.912   [1][2]: E0002000 CID B105E00D PID 000BB00E FPB-M7
+T554C 000:383.925   CPU_ReadMem(32 bytes @ 0xE0000FE0)
+T554C 000:384.876   [1][3]: E0000000 CID B105E00D PID 000BB001 ITM
+T554C 000:384.895   CPU_ReadMem(32 bytes @ 0xE0041FE0)
+T554C 000:385.893   [0][1]: E0041000 CID B105900D PID 001BB975 ETM-M7
+T554C 000:385.907   CPU_ReadMem(32 bytes @ 0xE0043FE0)
+T554C 000:386.863   [0][2]: E0043000 CID B105900D PID 004BB906 CTI
+T554C 000:386.874   CPU_WriteMem(4 bytes @ 0xE000ED84)
+T554C 000:387.600   CPU_ReadMem(4 bytes @ 0xE000ED80)
+T554C 000:388.337   I-Cache L1: 16 KB, 256 Sets, 32 Bytes/Line, 2-Way
+T554C 000:388.348   CPU_WriteMem(4 bytes @ 0xE000ED84)
+T554C 000:389.106   CPU_ReadMem(4 bytes @ 0xE000ED80)
+T554C 000:389.857   D-Cache L1: 16 KB, 128 Sets, 32 Bytes/Line, 4-Way
+T554C 000:389.908   JLINK_GetResetTypeDesc
+T554C 000:389.914   - 0.005ms 
+T554C 000:389.921   Reset type: NORMAL (https://kb.segger.com/J-Link_Reset_Strategies)
+T554C 000:389.930   CPU is running
+T554C 000:389.940   CPU_WriteMem(4 bytes @ 0xE000EDF0)
+T554C 000:390.796   CPU is running
+T554C 000:390.810   CPU_WriteMem(4 bytes @ 0xE000EDFC)
+T554C 000:391.626   Reset: Halt core after reset via DEMCR.VC_CORERESET.
+T554C 000:392.866   Reset: Reset device via AIRCR.SYSRESETREQ.
+T554C 000:392.879   CPU is running
+T554C 000:392.888   CPU_WriteMem(4 bytes @ 0xE000ED0C)
+T554C 000:448.518   CPU_ReadMem(4 bytes @ 0xE000EDF0)
+T554C 000:449.333   CPU_ReadMem(4 bytes @ 0xE000EDF0)
+T554C 000:453.545   CPU_WriteMem(4 bytes @ 0xE000EDFC)
+T554C 000:460.810   CPU_ReadMem(4 bytes @ 0xE000EDF0)
+T554C 000:465.013   CPU_WriteMem(4 bytes @ 0xE0002000)
+T554C 000:465.769   CPU_ReadMem(4 bytes @ 0xE000EDFC)
+T554C 000:466.652   CPU_ReadMem(4 bytes @ 0xE0001000)
+T554C 000:467.486 - 145.238ms 
+T554C 000:467.512 JLINK_GetId()
+T554C 000:468.126 - 0.614ms returns 0x6BA02477
+T554C 000:476.693 JLINK_GetFirmwareString(...)
+T554C 000:476.709 - 0.015ms 
+T554C 002:239.632 JLINK_SWO_Control(JLINKARM_SWO_CMD_GET_SPEED_INFO, ...)
+T554C 002:240.319 - 0.686ms returns 0x00
+T554C 002:240.346 JLINK_SWO_Control(JLINKARM_SWO_CMD_GET_SPEED_INFO, ...)
+T554C 002:241.063 - 0.717ms returns 0x00
+T554C 002:241.084 JLINK_SWO_Control(JLINKARM_SWO_CMD_GET_SPEED_INFO, ...)
+T554C 002:241.841 - 0.756ms returns 0x00
+T554C 002:241.869 JLINK_SWO_Control(JLINKARM_SWO_CMD_GET_SPEED_INFO, ...)
+T554C 002:242.529 - 0.660ms returns 0x00
+T554C 002:242.537 JLINK_SWO_Control(JLINKARM_SWO_CMD_GET_SPEED_INFO, ...)
+T554C 002:243.167 - 0.630ms returns 0x00
+T554C 002:243.442 JLINK_SWO_Control(JLINKARM_SWO_CMD_GET_SPEED_INFO, ...)
+T554C 002:244.212 - 0.769ms returns 0x00
+T554C 006:084.585 JLINK_Close()
+T554C 006:085.369   OnDisconnectTarget() start
+T554C 006:085.383    J-Link Script File: Executing OnDisconnectTarget()
+T554C 006:085.405   CPU_WriteMem(4 bytes @ 0x5C001004)
+T554C 006:086.230   CPU_WriteMem(4 bytes @ 0x5C001034)
+T554C 006:086.975   CPU_WriteMem(4 bytes @ 0x5C001054)
+T554C 006:087.721   OnDisconnectTarget() end - Took 2.33ms
+T554C 006:087.736   CPU_ReadMem(4 bytes @ 0xE0001000)
+T554C 006:088.446   CPU_WriteMem(4 bytes @ 0xE0001004)
+T554C 006:118.406 - 33.820ms
+T554C 006:118.433   
+T554C 006:118.439   Closed
