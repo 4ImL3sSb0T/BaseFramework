@@ -122,21 +122,23 @@ void StartDefaultTask(void *argument)
   log_rtt_println("=== LittleFS Test ===");
 
   lfs_port_init();
+  log_rtt_println("Port init OK");
 
   lfs_t lfs;
   int err = lfs_mount(&lfs, &g_lfs_cfg);
   if (err) {
-    log_rtt_println("Mount failed, formatting...");
+    log_rtt_printf("Mount failed: %d, formatting...\r\n", err);
     err = lfs_format(&lfs, &g_lfs_cfg);
     if (err) {
       log_rtt_printf("Format FAILED: %d\r\n", err);
       for(;;) {}
     }
+    log_rtt_println("Format OK, remounting...");
     err = lfs_mount(&lfs, &g_lfs_cfg);
-  }
-  if (err) {
-    log_rtt_printf("Mount FAILED: %d\r\n", err);
-    for(;;) {};
+    if (err) {
+      log_rtt_printf("Remount FAILED: %d\r\n", err);
+      for(;;) {}
+    }
   }
   log_rtt_println("LFS mounted OK");
 

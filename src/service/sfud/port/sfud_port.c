@@ -9,8 +9,11 @@
 #include "../inc/sfud.h"
 #include "spi_flash.h"
 #include "debug.h"
+#include "main.h"
 #include <stdarg.h>
 #include <stdio.h>
+
+static void retry_delay(void) { HAL_Delay(1); }
 
 /* ── SFUD required: SPI write then read ──────────────────────────────── */
 
@@ -36,7 +39,7 @@ sfud_err sfud_spi_port_init(sfud_flash *flash) {
     flash->spi.lock      = spi_lock;
     flash->spi.unlock    = spi_unlock;
     flash->spi.user_data = NULL;
-    flash->retry.delay   = NULL;
+    flash->retry.delay   = retry_delay;
     flash->retry.times   = 10000;
 
     spi_flash_init();
