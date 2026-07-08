@@ -26,7 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "sfud.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -107,6 +107,9 @@ int main(void)
   MX_USART1_UART_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
+
+  /* Initialize SFUD (Serial Flash Universal Driver) */
+  sfud_init();
 
   /* USER CODE END 2 */
 

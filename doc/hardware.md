@@ -30,7 +30,7 @@
 | 外设 | 实例 | 引脚 | 参数 | 中断/DMA |
 |------|------|------|------|----------|
 | USART1 | TX: PA9, RX: PA10 | 115200-8-N-1, 无流控, FIFO已禁用 | DMA1_Stream1 (RX, Circular), DMA1_Stream2 (TX, Normal), USART1_IRQn (pri=5) |
-| I2C1 | PB6 (SCL), PB7 (SDA) | 标准模式 | — |
+| SPI2 | PB13 (SCK), PB14 (MISO), PB15 (MOSI), PB12 (CS) | Master, 48 Mbps, CPOL=1 CPHA=1, MSB, 8-bit, 软件 NSS | 外接 SPI Flash，CS 由 PB12 GPIO 控制 |
 | TIM17 | 内部 | HAL 时基（1ms） | TIM17_IRQn → HAL_IncTick() |
 | GPIO | PC0 | 红色 LED（推挽输出） | — |
 | GPIO | PC1 | 绿色 LED（推挽输出） | — |
@@ -51,6 +51,10 @@
 | PC1 | GPIO_Output | 推挽 | 绿色 LED |
 | PC2 | GPIO_Output | 推挽 | 蓝色 LED |
 | PC13 | GPIO_Input | — | 用户按键 |
+| PB12 | GPIO_Output | 推挽 | SPI Flash CS |
+| PB13 | SPI2_SCK | AF5 (推挽) | SPI Flash 时钟 |
+| PB14 | SPI2_MISO | AF5 (推挽) | SPI Flash 数据输入 |
+| PB15 | SPI2_MOSI | AF5 (推挽) | SPI Flash 数据输出 |
 
 ## MPU 配置
 
@@ -63,7 +67,19 @@
 
 ## HAL 模块
 
-已启用的 HAL 模块：TIM, UART, GPIO, DMA, MDMA, RCC, FLASH, EXTI, PWR, I2C, CORTEX, HSEM
+已启用的 HAL 模块：TIM, UART, GPIO, DMA, MDMA, RCC, FLASH, EXTI, PWR, I2C, SPI, CORTEX, HSEM
+
+## SFUD (Serial Flash Universal Driver Library)
+
+| 参数 | 值 |
+|------|-----|
+| 版本 | v1.1.0 |
+| 接口 | SPI2 |
+| 设备表索引 | SFUD_W25QXX_DEVICE_INDEX = 0 |
+| SFDP 支持 | 启用（自动检测 Flash 参数） |
+| QSPI | 未启用 |
+| retry.times | 10000 |
+| 调试输出 | SEGGER RTT (channel 0) |
 
 ## FreeRTOS
 
