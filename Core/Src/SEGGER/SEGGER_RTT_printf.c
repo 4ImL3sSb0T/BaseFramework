@@ -297,6 +297,165 @@ static void _PrintInt(SEGGER_RTT_PRINTF_DESC * pBufferDesc, int v, unsigned Base
 
 /*********************************************************************
 *
+*       _PrintFloat
+*/
+static void _PrintFloat(SEGGER_RTT_PRINTF_DESC * pBufferDesc, double v, unsigned NumDigits, unsigned FieldWidth, unsigned FormatFlags) {
+  unsigned Width;
+  unsigned i;
+  unsigned Digit;
+  unsigned intPart;
+  double fracPart;
+  double rounding;
+  int isNegative;
+
+  //
+  // Handle negative values
+  //
+  isNegative = (v < 0.0);
+  if (isNegative) {
+    v = -v;
+  }
+  //
+  // Apply rounding based on precision
+  //
+  rounding = 0.5;
+  for (i = 0u; i < NumDigits; i++) {
+    rounding *= 0.1;
+  }
+  v += rounding;
+  //
+  // Clamp to uint32 range for safety
+  //
+  if (v >= 4294967296.0) {
+    v = 4294967295.0;
+  }
+  //
+  // Extract integer and fractional parts
+  //
+  intPart  = (unsigned)v;
+  fracPart = v - (double)intPart;
+  //
+  // Calculate field width of the number itself
+  //
+  {
+    unsigned tmp;
+    tmp = intPart;
+    Width = 1u;
+    while (tmp >= 10u) {
+      tmp /= 10u;
+      Width++;
+    }
+  }
+  if ((NumDigits > 0u) || ((FormatFlags & FORMAT_FLAG_ALTERNATE) != 0u)) {
+    Width += 1u + NumDigits;       // Decimal point + fractional digits
+  }
+  //
+  // Adjust FieldWidth for sign
+  //
+  if ((FieldWidth > 0u) && (isNegative || ((FormatFlags & FORMAT_FLAG_PRINT_SIGN) != 0u))) {
+    FieldWidth--;
+  }
+  //
+  // Print leading spaces if not left-justified and not zero-padded
+  //
+  if (((FormatFlags & FORMAT_FLAG_LEFT_JUSTIFY) == 0u) && ((FormatFlags & FORMAT_FLAG_PAD_ZERO) == 0u)) {
+    if (FieldWidth != 0u) {
+      while ((FieldWidth != 0u) && (Width < FieldWidth)) {
+        FieldWidth--;
+        _StoreChar(pBufferDesc, ' ');
+        if (pBufferDesc->ReturnValue < 0) {
+          return;
+        }
+      }
+    }
+  }
+  //
+  // Print sign
+  //
+  if (pBufferDesc->ReturnValue >= 0) {
+    if (isNegative) {
+      _StoreChar(pBufferDesc, '-');
+    } else if ((FormatFlags & FORMAT_FLAG_PRINT_SIGN) != 0u) {
+      _StoreChar(pBufferDesc, '+');
+    }
+    if (pBufferDesc->ReturnValue < 0) {
+      return;
+    }
+    //
+    // Print leading zeros if zero-padded (right-justified)
+    //
+    if (((FormatFlags & FORMAT_FLAG_PAD_ZERO) != 0u) && ((FormatFlags & FORMAT_FLAG_LEFT_JUSTIFY) == 0u)) {
+      if (FieldWidth != 0u) {
+        while ((FieldWidth != 0u) && (Width < FieldWidth)) {
+          FieldWidth--;
+          _StoreChar(pBufferDesc, '0');
+          if (pBufferDesc->ReturnValue < 0) {
+            return;
+          }
+        }
+      }
+    }
+    if (pBufferDesc->ReturnValue >= 0) {
+      //
+      // Print integer part
+      //
+      {
+        unsigned div;
+        unsigned tmp;
+        div = 1u;
+        tmp = intPart;
+        while (tmp >= 10u) {
+          div *= 10u;
+          tmp /= 10u;
+        }
+        do {
+          Digit = intPart / div;
+          _StoreChar(pBufferDesc, (char)('0' + Digit));
+          if (pBufferDesc->ReturnValue < 0) {
+            return;
+          }
+          intPart %= div;
+          div /= 10u;
+        } while (div > 0u);
+      }
+      //
+      // Print decimal point and fractional part
+      //
+      if ((NumDigits > 0u) || ((FormatFlags & FORMAT_FLAG_ALTERNATE) != 0u)) {
+        _StoreChar(pBufferDesc, '.');
+        if (pBufferDesc->ReturnValue < 0) {
+          return;
+        }
+        for (i = 0u; i < NumDigits; i++) {
+          fracPart *= 10.0;
+          Digit = (unsigned)fracPart;
+          _StoreChar(pBufferDesc, (char)('0' + Digit));
+          if (pBufferDesc->ReturnValue < 0) {
+            return;
+          }
+          fracPart -= (double)Digit;
+        }
+      }
+      //
+      // Print trailing spaces if left-justified
+      //
+      if ((FormatFlags & FORMAT_FLAG_LEFT_JUSTIFY) != 0u) {
+        if (FieldWidth != 0u) {
+          while ((FieldWidth != 0u) && (Width < FieldWidth)) {
+            FieldWidth--;
+            _StoreChar(pBufferDesc, ' ');
+            if (pBufferDesc->ReturnValue < 0) {
+              return;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/*********************************************************************
+*
 *       Public code
 *
 **********************************************************************
@@ -433,9 +592,9 @@ int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pPa
           } while (BufferDesc.ReturnValue >= 0);
         }
         break;
-      case 'p':
-        v = va_arg(*pParamList, int);
-        _PrintUnsigned(&BufferDesc, (unsigned)v, 16u, 8u, 8u, 0u);
+      case 'f':
+        v = va_arg(*pParamList, double);
+        _PrintFloat(&BufferDesc, v, NumDigits > 0u ? NumDigits : 6u, FieldWidth, FormatFlags);
         break;
       case '%':
         _StoreChar(&BufferDesc, '%');
@@ -491,6 +650,10 @@ int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pPa
 *          x: Print the argument as an hexadecimal integer
 *          s: Print the string pointed to by the argument
 *          p: Print the argument as an 8-digit hexadecimal integer. (Argument shall be a pointer to void.)
+*          f: Print the argument as a floating point number (double).
+*             Default precision is 6 decimal places. Use %.Nf to control precision.
+*             Supports floating-point rounding when precision is used.
+*             Supports + flag (show sign), - flag (left justify), 0 flag (zero pad).
 */
 int SEGGER_RTT_printf(unsigned BufferIndex, const char * sFormat, ...) {
   int r;
