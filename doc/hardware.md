@@ -103,3 +103,18 @@
 
 - **SWD**：标准 ARM Cortex-M 调试接口
 - **SEGGER SystemView**：通过 J-Link RTT 记录 FreeRTOS 运行时事件（已集成）
+
+## ST7735 TFT LCD 显示
+
+| 参数 | 值 |
+|------|-----|
+| 型号 | ST7735 (128×160) |
+| 接口 | SPI1, 仅发送 (1-Line) |
+| SPI 引脚 | PB3=SCK, PB5=MOSI |
+| CS 引脚 | PB6 (GPIO 软件控制) |
+| DC 引脚 | PB4 (GPIO 软件控制) |
+| RST 引脚 | PB7 (GPIO 软件控制) |
+| SPI 时钟 | 6MHz (PLL1Q=96MHz ÷ 16) |
+| SPI 模式 | CPOL=High, CPHA=2Edge, MSB |
+| 渲染方式 | 帧缓冲 (GFXcanvas16, 40KB) |
+| Adafruit 驱动 | ST7735 → ST77xx → SPITFT → GFX |
