@@ -33,11 +33,8 @@ STM32H750VBTx (Cortex-M7) 嵌入式基础框架，基于 STM32CubeMX 生成，�
 ## 代码架构
 
 ### 硬件层
-- **MCU**：STM32H750VBTx (Cortex-M7, 480MHz via PLL from HSI 64MHz)
-- **时钟**：HSI → PLL (M=4, N=60, P=2) → 480MHz SYSCLK; HCLK=240MHz (÷2)
-- **外设**：USART1 (PA9/PA10, 115200-8-N-1, DMA1 Stream1 RX + Stream2 TX), I2C, GPIO (PC0/PC1/PC2 LED, PC13 Key), TIM17 (HAL timebase)
-- **MPU**：Region0 全地址无访问权限 + Region1 0x30000000 32KB 全访问
-- **HAL 模块已启用**：TIM, UART, GPIO, DMA, MDMA, RCC, FLASH, EXTI, PWR, I2C, CORTEX, HSEM
+- **MCU**：STM32H750VBTx (Cortex-M7, 480MHz)
+- 完整的引脚、外设、时钟、MPU 配置见 `doc/hardware.md`
 
 ### FreeRTOS 层
 - **FreeRTOS V10.3.1**，通过 CMSIS-RTOS V2 API 使用 (`cmsis_os2.c`)
@@ -55,16 +52,11 @@ src/            ← 用户应用层（分层：app/ bsp/ driver/ service/）
 BaseFramework.ioc  ← CubeMX 项目配置（跟踪）
 ```
 
-## 常用外设引脚
+## 硬件参考
 
-| 功能 | 引脚 | 端口 |
-|------|------|------|
-| USART1 TX | PA9 | GPIOA |
-| USART1 RX | PA10 | GPIOA |
-| 红色 LED | PC0 | GPIOC |
-| 绿色 LED | PC1 | GPIOC |
-| 蓝色 LED | PC2 | GPIOC |
-| 用户按键 | PC13 | GPIOC |
+**所有与硬件相关的信息（引脚、外设、时钟、MPU 等）必须写在 `doc/hardware.md` 中。**
+- 涉及硬件开发时，**必须先参考** `doc/hardware.md`
+- 任何硬件修改（引脚变更、外设新增、时钟调整等）**必须同步更新** `doc/hardware.md`
 
 ## .gitignore 注意事项
 
