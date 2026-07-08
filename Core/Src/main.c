@@ -108,9 +108,6 @@ int main(void)
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
 
-  /* Initialize SFUD (Serial Flash Universal Driver) */
-  sfud_init();
-
   /* USER CODE END 2 */
 
   /* Init scheduler */

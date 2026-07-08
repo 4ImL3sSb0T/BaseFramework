@@ -13,9 +13,9 @@
 extern "C" {
 #endif
 
-void debug_printf(const char *format, ...);
-void debug_vprintf(const char *format, va_list args);
-void debug_println(const char *text);
+void log_rtt_printf(const char *format, ...);
+void log_rtt_vprintf(const char *format, va_list args);
+void log_rtt_println(const char *text);
 
 #ifdef __cplusplus
 }

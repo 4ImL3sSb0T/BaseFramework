@@ -47,19 +47,19 @@ sfud_err sfud_spi_port_init(sfud_flash *flash) {
 /* ── Log forwarding ──────────────────────────────────────────────────── */
 
 void sfud_log_debug(const char *file, const long line, const char *format, ...) {
-    debug_printf("[SFUD](%s:%ld) ", file, line);
+    log_rtt_printf("[SFUD](%s:%ld) ", file, line);
     va_list args;
     va_start(args, format);
-    debug_vprintf(format, args);
+    log_rtt_vprintf(format, args);
     va_end(args);
-    debug_println("");
+    log_rtt_println("");
 }
 
 void sfud_log_info(const char *format, ...) {
-    debug_printf("[SFUD]");
+    log_rtt_printf("[SFUD]");
     va_list args;
     va_start(args, format);
-    debug_vprintf(format, args);
+    log_rtt_vprintf(format, args);
     va_end(args);
-    debug_println("");
+    log_rtt_println("");
 }
