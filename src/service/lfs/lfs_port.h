@@ -1,10 +1,12 @@
 /*
- * GD32H759 LittleFS Port — SPI4 NOR Flash
+ * STM32H750 LittleFS Port — SPI NOR Flash via SFUD
  *
  * Provides the lfs_config structure and block-device callbacks
- * bridging LittleFS to the SPI flash driver (Source/Bsp/Flash/).
+ * bridging LittleFS to the SFUD universal flash driver.
  *
- * Call lfs_port_init() once before lfs_mount() to initialize SPI4.
+ * Call lfs_port_init() once before lfs_mount().  SFUD auto-detects
+ * the flash chip via JEDEC ID / SFDP, so this port works with any
+ * SPI NOR Flash (W25Q, GD25Q, etc.) without manual geometry changes.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -20,23 +22,17 @@ extern "C" {
 
 /* ── Flash geometry ───────────────────────────────────────────────
  *
- * Values common to GD25Q64 (8 MB) and other 3-byte-address parts:
+ * These must match the physical flash.  SFUD fills them via SFDP:
  *   Page (program unit):    256 bytes  → lfs_config.prog_size
  *   Sector (erase unit):   4096 bytes  → lfs_config.block_size
  *
  * read_size = 1 (SPI supports byte-granular reads).
- *
- * The driver uses 3-byte addressing (no EN4B) — max 16 MB.
- *   GD25Q64   ( 8 MB): 2048   ← default, matches confirmed board chip
- *   GD25Q128  (16 MB): 4096
- * >16 MB parts (e.g. GD25X512ME 64 MB) need 4-byte mode, which this
- * driver does NOT implement.  Confirm the chip with spi_flash_read_id().
  */
 
 #define LFS_FLASH_READ_SIZE    1
 #define LFS_FLASH_PROG_SIZE    256
 #define LFS_FLASH_BLOCK_SIZE   4096
-#define LFS_FLASH_BLOCK_COUNT  2048   /* 2048 × 4 KB = 8 MB (GD25Q64) */
+#define LFS_FLASH_BLOCK_COUNT  2048   /* 2048 × 4 KB = 8 MB */
 
 /* ── Cache / lookahead sizes ────────────────────────────────────── */
 
@@ -49,9 +45,9 @@ extern uint8_t lfs_read_buf[LFS_FLASH_CACHE_SIZE];
 extern uint8_t lfs_prog_buf[LFS_FLASH_CACHE_SIZE];
 extern uint8_t lfs_lookahead_buf[LFS_FLASH_LOOKAHEAD_SIZE];
 
-/* ── Global config ──────────────────────────────────────────────── */
+/* ── Global config (non-const: context set at runtime) ──────────── */
 
-extern const struct lfs_config g_lfs_cfg;
+extern struct lfs_config g_lfs_cfg;
 
 /* ── Public API ─────────────────────────────────────────────────── */
 

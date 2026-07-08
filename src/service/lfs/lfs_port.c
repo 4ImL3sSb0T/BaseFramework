@@ -1,17 +1,17 @@
 /*
- * GD32H759 LittleFS Port — SPI4 NOR Flash
+ * STM32H750 LittleFS Port — SPI NOR Flash via SFUD
  *
- * Block-device callbacks bridging LittleFS to the SPI flash driver
- * (Source/Bsp/Flash/spi_flash.c).
+ * Block-device callbacks bridging LittleFS to the SFUD universal
+ * flash driver.  SFUD auto-detects the flash chip, so this port
+ * works with any supported SPI NOR Flash without manual changes.
  *
- * Call lfs_port_init() once during system startup (before mounting)
- * to initialize the SPI4 peripheral and GPIO pins.
+ * Call lfs_port_init() once during system startup (before mounting).
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include "lfs_port.h"
-#include "spi_flash.h"
+#include "sfud.h"
 #include <stddef.h>
 
 /* FreeRTOS mutex for thread safety */
@@ -28,7 +28,7 @@ uint8_t lfs_lookahead_buf[LFS_FLASH_LOOKAHEAD_SIZE];
 
 /* ── Global configuration ───────────────────────────────────────── */
 
-const struct lfs_config g_lfs_cfg = {
+struct lfs_config g_lfs_cfg = {
     .context       = NULL,
     .read          = lfs_port_read,
     .prog          = lfs_port_prog,
@@ -42,7 +42,7 @@ const struct lfs_config g_lfs_cfg = {
     .read_size     = LFS_FLASH_READ_SIZE,      /*   1 */
     .prog_size     = LFS_FLASH_PROG_SIZE,      /* 256 */
     .block_size    = LFS_FLASH_BLOCK_SIZE,     /* 4096 */
-    .block_count   = LFS_FLASH_BLOCK_COUNT,    /* see lfs_port.h */
+    .block_count   = LFS_FLASH_BLOCK_COUNT,
     .block_cycles  = 500,
 
     .cache_size    = LFS_FLASH_CACHE_SIZE,     /* 256 */
@@ -63,52 +63,54 @@ const struct lfs_config g_lfs_cfg = {
 
 void lfs_port_init(void)
 {
-    spi_flash_init();
+    sfud_init();
 
-    /* Create mutex for thread safety (if not already created) */
+    g_lfs_cfg.context = sfud_get_device(0);
+
     if (g_lfs_mutex == NULL) {
         g_lfs_mutex = xSemaphoreCreateMutex();
-        /* If creation fails, g_lfs_mutex remains NULL and lock/unlock will be no-ops */
     }
 }
 
 /* ── Block-device callbacks ───────────────────────────────────────
  *
- * Address translation:  physical_addr = block * LFS_FLASH_BLOCK_SIZE + off
+ * Address translation:  physical_addr = block * block_size + off
  *
- * All writes use spi_flash_buffer_write() which auto-splits across
- * page boundaries (256 B per page).  The GD25X/Q series supports
- * page-program wrapping within a 256 B page — buffer_write handles
- * the split correctly.
+ * LFS handles erase-before-prog — prog callback writes to already-
+ * erased pages only, so sfud_write() (no auto-erase) is correct.
  */
+
+static sfud_flash *get_flash(const struct lfs_config *c)
+{
+    return (sfud_flash *)c->context;
+}
 
 int lfs_port_read(const struct lfs_config *c, lfs_block_t block,
                   lfs_off_t off, void *buffer, lfs_size_t size)
 {
-    (void)c;
-    uint32_t addr = (uint32_t)block * LFS_FLASH_BLOCK_SIZE + off;
-    return spi_flash_buffer_read((uint8_t *)buffer, addr, size) == 0 ? 0 : LFS_ERR_IO;
+    sfud_flash *flash = get_flash(c);
+    uint32_t addr = (uint32_t)block * c->block_size + off;
+    return sfud_read(flash, addr, size, (uint8_t *)buffer) == SFUD_SUCCESS ? 0 : LFS_ERR_IO;
 }
 
 int lfs_port_prog(const struct lfs_config *c, lfs_block_t block,
                   lfs_off_t off, const void *buffer, lfs_size_t size)
 {
-    (void)c;
-    uint32_t addr = (uint32_t)block * LFS_FLASH_BLOCK_SIZE + off;
-    return spi_flash_buffer_write((const uint8_t *)buffer, addr, size) == 0 ? 0 : LFS_ERR_IO;
+    sfud_flash *flash = get_flash(c);
+    uint32_t addr = (uint32_t)block * c->block_size + off;
+    return sfud_write(flash, addr, size, (const uint8_t *)buffer) == SFUD_SUCCESS ? 0 : LFS_ERR_IO;
 }
 
 int lfs_port_erase(const struct lfs_config *c, lfs_block_t block)
 {
-    (void)c;
-    uint32_t addr = (uint32_t)block * LFS_FLASH_BLOCK_SIZE;
-    return spi_flash_sector_erase(addr) == 0 ? 0 : LFS_ERR_IO;
+    sfud_flash *flash = get_flash(c);
+    uint32_t addr = (uint32_t)block * c->block_size;
+    return sfud_erase(flash, addr, c->block_size) == SFUD_SUCCESS ? 0 : LFS_ERR_IO;
 }
 
 int lfs_port_sync(const struct lfs_config *c)
 {
     (void)c;
-    /* SPI writes go directly to the device — no intermediate cache */
     return 0;
 }
 
