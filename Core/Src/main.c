@@ -107,6 +107,7 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   MX_SPI2_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   hspi2.Instance->CFG1 = (hspi2.Instance->CFG1 & ~SPI_CFG1_MBR)
                        | (2UL << SPI_CFG1_MBR_Pos);
