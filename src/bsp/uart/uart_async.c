@@ -14,9 +14,9 @@
 #define UART_ASYNC_TX_STREAM_BUFFER_ITEM_SIZE sizeof(uint8_t)
 #define UART_ASYNC_RX_STREAM_BUFFER_ITEM_SIZE sizeof(uint8_t)
 
-uint8_t uart_tx_dma_buffer[UART_ASYNC_TX_DMA_BUFFER_SIZE] __attribute__((section(".dma_buffer"), aligned(32), used));
+uint8_t uart_tx_dma_buffer[UART_ASYNC_TX_DMA_BUFFER_SIZE] __attribute__((aligned(32)));
 
-uint8_t uart_rx_dma_buffer[UART_ASYNC_RX_DMA_BUFFER_SIZE] __attribute__((section(".dma_buffer"), aligned(32), used));
+uint8_t uart_rx_dma_buffer[UART_ASYNC_RX_DMA_BUFFER_SIZE] __attribute__((aligned(32)));
 
 static StreamBufferHandle_t uart_tx_stream_buffer = NULL;
 static StreamBufferHandle_t uart_rx_stream_buffer = NULL;
