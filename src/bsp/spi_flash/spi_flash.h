@@ -18,10 +18,11 @@ extern "C" {
 void spi_flash_cs_low(void);
 void spi_flash_cs_high(void);
 
-int  spi_flash_transmit(const uint8_t *data, size_t size);
-int  spi_flash_receive(uint8_t *data, size_t size);
-
-/** Atomic CS-low → write → read → CS-high transaction. */
+/**
+ * SPI Flash transaction — atomic CS-low → write cmd → read data → CS-high.
+ * Clock is continuous throughout (via HAL_SPI_TransmitReceive),
+ * which is required by all SPI NOR Flash chips.
+ */
 int  spi_flash_write_read(const uint8_t *write_buf, size_t write_size,
                           uint8_t *read_buf, size_t read_size);
 
