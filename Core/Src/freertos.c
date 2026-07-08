@@ -126,72 +126,14 @@ void StartDefaultTask(void *argument)
 
   lfs_t lfs;
   int err = lfs_mount(&lfs, &g_lfs_cfg);
-  if (err) {
-    log_rtt_printf("Mount failed: %d, formatting...\r\n", err);
-    err = lfs_format(&lfs, &g_lfs_cfg);
-    if (err) {
-      log_rtt_printf("Format FAILED: %d\r\n", err);
-      for(;;) {}
-    }
-    log_rtt_println("Format OK, remounting...");
-    err = lfs_mount(&lfs, &g_lfs_cfg);
-    if (err) {
-      log_rtt_printf("Remount FAILED: %d\r\n", err);
-      for(;;) {}
-    }
-  }
-  log_rtt_println("LFS mounted OK");
-
-  const char *msg = "Hello from LittleFS on W25Q64!";
-  lfs_file_t file;
-
-  err = lfs_file_open(&lfs, &file, "test.txt", LFS_O_RDWR | LFS_O_CREAT);
-  if (err) {
-    log_rtt_printf("File open FAILED: %d\r\n", err);
-    for(;;) {};
-  }
-  log_rtt_println("File opened: test.txt");
-
-  lfs_ssize_t w = lfs_file_write(&lfs, &file, msg, strlen(msg));
-  if (w < 0) {
-    log_rtt_printf("File write FAILED: %d\r\n", (int)w);
-    for(;;) {};
-  }
-  log_rtt_printf("Written: %d bytes\r\n", (int)w);
-
-  err = lfs_file_close(&lfs, &file);
-  if (err) {
-    log_rtt_printf("File close FAILED: %d\r\n", err);
-    for(;;) {};
-  }
-  log_rtt_println("File closed OK");
-
-  err = lfs_file_open(&lfs, &file, "test.txt", LFS_O_RDONLY);
-  if (err) {
-    log_rtt_printf("File re-open FAILED: %d\r\n", err);
-    for(;;) {};
-  }
-
-  char buf[64] = {0};
-  lfs_ssize_t r = lfs_file_read(&lfs, &file, buf, sizeof(buf) - 1);
-  if (r < 0) {
-    log_rtt_printf("File read FAILED: %d\r\n", (int)r);
-    for(;;) {};
-  }
-  log_rtt_printf("Read back: %d bytes → \"%s\"\r\n", (int)r, buf);
-
-  err = lfs_file_close(&lfs, &file);
-
-  if (strcmp(buf, msg) == 0) {
-    log_rtt_println("=== LittleFS Test PASSED ===");
-  } else {
-    log_rtt_println("=== LittleFS Test FAILED (data mismatch) ===");
-  }
+  if (err) log_rtt_println("Mount failed");
+  else log_rtt_println("Mount OK");
 
   /* Infinite loop */
   for(;;)
   {
     HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
+    log_rtt_println("Toggle GREEN");
     osDelay(500);
   }
   /* USER CODE END StartDefaultTask */
