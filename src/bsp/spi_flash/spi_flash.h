@@ -15,24 +15,17 @@
 extern "C" {
 #endif
 
-void spi_flash_cs_low(void);
-void spi_flash_cs_high(void);
+void     spi_flash_cs_low(void);
+void     spi_flash_cs_high(void);
+uint8_t  spi_flash_read_write_byte(uint8_t tx_data);
 
-/**
- * SPI Flash transaction — atomic CS-low → write cmd → read data → CS-high.
- * Clock is continuous throughout (via HAL_SPI_TransmitReceive),
- * which is required by all SPI NOR Flash chips.
- */
-int  spi_flash_write_read(const uint8_t *write_buf, size_t write_size,
-                          uint8_t *read_buf, size_t read_size);
+int      spi_flash_write_read(const uint8_t *write_buf, size_t write_size,
+                              uint8_t *read_buf, size_t read_size);
 
-void spi_flash_init(void);
+void     spi_flash_init(void);
 
-/**
- * Read JEDEC ID (command 0x9F). Returns 3 bytes: mf_id, type_id, capacity_id.
- * On success returns 0, on failure returns -1.
- */
-int  spi_flash_read_jedec_id(uint8_t *mf_id, uint8_t *type_id, uint8_t *capacity_id);
+uint16_t spi_flash_read_id(void);
+int      spi_flash_read_jedec_id(uint8_t *mf_id, uint8_t *type_id, uint8_t *capacity_id);
 
 #ifdef __cplusplus
 }

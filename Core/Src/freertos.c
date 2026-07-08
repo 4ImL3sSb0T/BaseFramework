@@ -27,6 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "spi_flash.h"
 #include "debug.h"
+#include "service/sfud/inc/sfud.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -118,13 +119,21 @@ void StartDefaultTask(void *argument)
 
   spi_flash_init();
 
+  uint16_t dev_id = spi_flash_read_id();
+  log_rtt_printf("Device ID: 0x%04X\r\n", dev_id);
+
   uint8_t mf_id, type_id, capacity_id;
   int rc = spi_flash_read_jedec_id(&mf_id, &type_id, &capacity_id);
   if (rc == 0) {
     log_rtt_printf("JEDEC ID: MF=0x%02X  Type=0x%02X  Cap=0x%02X\r\n",
                    mf_id, type_id, capacity_id);
   } else {
-    log_rtt_println("Flash ID read FAILED!");
+    log_rtt_println("Flash JEDEC ID read FAILED!");
+  }
+
+  sfud_err ret = sfud_init();
+  if (ret != SFUD_SUCCESS) {
+    log_rtt_printf("SFUD initialization FAILED!\r\n");
   }
 
   /* Infinite loop */
