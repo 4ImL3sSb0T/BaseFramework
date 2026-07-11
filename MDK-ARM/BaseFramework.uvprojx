@@ -341,7 +341,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H750xx,LFS_DEFINES=lfs_armclang_port.h</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/ST/ARM/DSP/Inc;../Core/Inc/SEGGER;../src;../src/service/sfud/inc;../src/service/lfs;../src/bsp/spi_flash;../src/bsp/rtt;../src/bsp/uart;../src/bsp/tft_port;../src/service/gfx;../src/service/gfx/Fonts;../src/driver/st7735;../src/service/cli;../src/service/cli/log;../src/service/cli/port;../src/service/sys;../src/common/tools</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/ST/ARM/DSP/Inc;../Core/Inc/SEGGER;../src;../src/service/sfud/inc;../src/service/lfs;../src/bsp/spi_flash;../src/bsp/rtt;../src/bsp/uart;../src/bsp/tft_port;../src/service/gfx;../src/service/gfx/Fonts;../src/driver/st7735;../src/service/cli;../src/service/cli/log;../src/service/cli/port;../src/service/sys;../src/common/tools;../src/service/gui;../src/service/gui/MujicaUI_Lite</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -927,6 +927,41 @@
               <FileName>tft_demo.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>../src/app/tft_demo.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>mjc_demo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/app/mjc_demo.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/MujicaUI</GroupName>
+          <Files>
+            <File>
+              <FileName>mjc_hal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/gui/MujicaUI_Lite/mjc_hal.c</FilePath>
+            </File>
+            <File>
+              <FileName>mjc_hal_gfx.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/service/gui/MujicaUI_Lite/mjc_hal_gfx.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>mjc_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/gui/MujicaUI_Lite/mjc_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>mjc_render.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/gui/MujicaUI_Lite/mjc_render.c</FilePath>
+            </File>
+            <File>
+              <FileName>multi_button.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/gui/multi_button.c</FilePath>
             </File>
           </Files>
         </Group>

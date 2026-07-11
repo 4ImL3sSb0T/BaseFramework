@@ -13,7 +13,7 @@ typedef struct mjc_hal_driver_t {
     uint16_t height;
     uint16_t pen_color;
     uint16_t bg_color;
-    void* user_data;
+    void *user_data;
 
     void (*clear)(void);
     void (*fill)(uint16_t color);
@@ -23,18 +23,22 @@ typedef struct mjc_hal_driver_t {
     void (*draw_rect)(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
     void (*fill_rect)(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
     void (*draw_char)(uint16_t x, uint16_t y, char c);
-    void (*draw_string)(uint16_t x, uint16_t y, const char* str);
+    void (*draw_string)(uint16_t x, uint16_t y, const char *str);
     void (*set_font_size)(uint8_t size);
+    /** Optional: push frame buffer to panel (tft_fb_flush). */
+    void (*present)(void);
 } mjc_hal_driver_t;
 
-uint8_t mjc_hal_init(const mjc_hal_config_t* config);
-uint8_t mjc_hal_use_driver(mjc_hal_driver_t* driver);
-const mjc_hal_driver_t* mjc_hal_get_driver(void);
+uint8_t mjc_hal_init(const mjc_hal_config_t *config);
+uint8_t mjc_hal_use_driver(mjc_hal_driver_t *driver);
+const mjc_hal_driver_t *mjc_hal_get_driver(void);
 uint16_t mjc_hal_screen_width(void);
 uint16_t mjc_hal_screen_height(void);
+/** Call driver->present if available. */
+void mjc_hal_present(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // !__MJC_HAL_H
+#endif /* __MJC_HAL_H */

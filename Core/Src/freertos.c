@@ -34,11 +34,7 @@
 #include "sys_log.h"
 #include "uart_async.h"
 #include "shell_port.h"
-#ifdef __cplusplus
-extern "C" void tft_demo_task(void);
-#else
-extern void tft_demo_task(void);
-#endif
+extern void mjc_demo_task(void);
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -151,20 +147,14 @@ void StartDefaultTask(void *argument)
   lfs_port_init();
   log_rtt_println("lfs_port_init OK");
 
-  tft_demo_task();
-  log_rtt_println("TFT demo init OK");
-
   lfs_t lfs;
   int err = lfs_mount(&lfs, &g_lfs_cfg);
   if (err) log_rtt_println("lfs_mount failed");
   else log_rtt_println("lfs_mount OK");
 
-  /* Infinite loop */
-  for(;;)
-  {
-    HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
-    osDelay(500);
-  }
+  /* Blocks: menu UI + KEY (PC13). Does not return. */
+  mjc_demo_task();
+
   /* USER CODE END StartDefaultTask */
 }
 

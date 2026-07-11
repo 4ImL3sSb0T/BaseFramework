@@ -10,6 +10,7 @@
 #include <stdbool.h>
 
 #include "mjc_hal.h"
+#include "mjc_hal_gfx.h"
 #include "service/sys/sys_log.h"
 #include "mjc_config.h"
 
@@ -179,11 +180,9 @@ uint8_t mjc_render_init(void) {
         return 1;
     }
 
-    mjc_hal_config_t cfg = mjc_hal_get_default_config();
-    cfg.display_dir = MJC_DIR_PORTRAIT; // 竖屏方向，可按需调整
-
-    if (!mjc_hal_init(&cfg)) {
-        sys_log_text(error, "mjc_hal_init failed");
+    /* Bind ST7735 / Adafruit GFX frame buffer as HAL */
+    if (!mjc_hal_gfx_init()) {
+        sys_log_text(error, "mjc_hal_gfx_init failed");
         return 0;
     }
 
@@ -194,11 +193,12 @@ uint8_t mjc_render_init(void) {
     }
 
     if (drv->set_color != NULL) {
-        drv->set_color(0xFFFF, 0x0000); // 白前景，黑背景
+        drv->set_color(0xFFFF, 0x0000);
     }
     if (drv->fill != NULL) {
         drv->fill(0x0000);
     }
+    mjc_hal_present();
 
     sys_log_text(info, "UI driver ready w=%d h=%d", mjc_hal_screen_width(), mjc_hal_screen_height());
     s_render_inited = true;
@@ -282,7 +282,7 @@ void mjc_render_item(const mjc_item_t* item, uint16_t y, uint8_t selected) {
     }
 
     if (drv->set_font_size != NULL) {
-        drv->set_font_size(1); // 8x16 字体
+        drv->set_font_size(1); /* GFX built-in 6x8 */
     }
 
     char value_buf[MJC_RENDER_VALUE_BUF] = {0};
@@ -390,4 +390,7 @@ void mjc_render_page(const mjc_page_t* page) {
     } else {
         s_snapshot.valid = false;
     }
+
+    /* Push off-screen buffer to ST7735 */
+    mjc_hal_present();
 }
