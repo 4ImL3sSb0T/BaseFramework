@@ -30,6 +30,10 @@
 #include "sfud.h"
 #include "lfs.h"
 #include "lfs_port.h"
+#include "sys_time.h"
+#include "sys_log.h"
+#include "uart_async.h"
+#include "shell_port.h"
 #ifdef __cplusplus
 extern "C" void tft_demo_task(void);
 #else
@@ -124,24 +128,37 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
 
-  log_rtt_println("=== LittleFS Test ===");
+  dwt_init();
+  sys_log_init(SYS_LOG_RTT);
+  log_rtt_println("=== StartDefaultTask ===");
+
+  if (uart_async_init() != EXIT_OK) {
+    log_rtt_println("uart_async_init FAIL");
+  } else if (uart_async_start() != EXIT_OK) {
+    log_rtt_println("uart_async_start FAIL");
+  } else if (shell_port_init() != EXIT_OK) {
+    log_rtt_println("shell_port_init FAIL");
+  } else if (shell_port_start() != EXIT_OK) {
+    log_rtt_println("shell_port_start FAIL");
+  } else {
+    log_rtt_println("shell + uart_async OK (USART1)");
+  }
 
   lfs_port_init();
-  log_rtt_println("Port init OK");
+  log_rtt_println("lfs_port_init OK");
 
   tft_demo_task();
   log_rtt_println("TFT demo init OK");
 
   lfs_t lfs;
   int err = lfs_mount(&lfs, &g_lfs_cfg);
-  if (err) log_rtt_println("Mount failed");
-  else log_rtt_println("Mount OK");
+  if (err) log_rtt_println("lfs_mount failed");
+  else log_rtt_println("lfs_mount OK");
 
   /* Infinite loop */
   for(;;)
   {
     HAL_GPIO_TogglePin(GREEN_GPIO_Port, GREEN_Pin);
-    log_rtt_println("Toggle GREEN");
     osDelay(500);
   }
   /* USER CODE END StartDefaultTask */

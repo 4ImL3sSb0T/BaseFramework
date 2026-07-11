@@ -3,17 +3,23 @@
 #include "service/cli/shell.h"
 #include "service/cli/log/log.h"
 
+/*
+ * Task list (name / state / prio / stack HWM / number).
+ * Full run-time % needs configGENERATE_RUN_TIME_STATS — not enabled yet.
+ */
 int cpu_usage(int argc, char *argv[])
 {
-  (void)argc;
-  (void)argv;
-  static char buf[512];
-  vTaskGetRunTimeStats(buf);
-  logPrintln("Task            Abs Time    %% Time");
-  logPrintln("------------------------------------");
-  logPrintln("%s", buf);
-  return 0;
+    (void)argc;
+    (void)argv;
+
+#if (configUSE_TRACE_FACILITY == 1) && (configUSE_STATS_FORMATTING_FUNCTIONS > 0)
+    static char buf[512];
+    vTaskList(buf);
+    logPrintln("Name            State  Prio  Stack  Num");
+    logPrintln("----------------------------------------");
+    logPrintln("%s", buf);
+#else
+    logPrintln("task list unavailable (enable configUSE_STATS_FORMATTING_FUNCTIONS)");
+#endif
+    return 0;
 }
-SHELL_EXPORT_CMD(
-SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
-cpu, cpu_usage, show task CPU usage);

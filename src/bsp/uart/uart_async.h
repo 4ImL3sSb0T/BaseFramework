@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "FreeRTOS.h"
-#include "service/tools/common_def.h"
+#include "common/tools/common_def.h"
 
 exit_code_t uart_async_init(void);
 exit_code_t uart_async_deinit(void);

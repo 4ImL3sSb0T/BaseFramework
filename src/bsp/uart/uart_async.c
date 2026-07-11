@@ -1,5 +1,5 @@
 #include "uart_async.h"
-#include "service/tools/common_def.h"
+#include "common/tools/common_def.h"
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "stream_buffer.h"
@@ -94,10 +94,8 @@ exit_code_t uart_async_write(const uint8_t* data, const uint32_t len, const Tick
 }
 
 size_t uart_async_read(uint8_t* data, const uint32_t len, const TickType_t timeout) {
-    xSemaphoreTake(uart_tx_mutex, portMAX_DELAY);
-    const size_t received = xStreamBufferReceive(uart_rx_stream_buffer, data, len, timeout);
-    xSemaphoreGive(uart_tx_mutex);
-    return received;
+    /* RX: single producer (ISR) + single consumer (shell task); no TX mutex */
+    return xStreamBufferReceive(uart_rx_stream_buffer, data, len, timeout);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {

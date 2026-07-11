@@ -166,6 +166,9 @@ standard names. */
 /* USER CODE BEGIN Defines */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
 
+/* vTaskList / formatted task stats (shell `cpu` command) */
+#define configUSE_STATS_FORMATTING_FUNCTIONS 1
+
 /* Include SEGGER SystemView FreeRTOS trace macros (provides traceISR_ENTER/EXIT etc.) */
 #include "SEGGER_SYSVIEW_FreeRTOS.h"
 

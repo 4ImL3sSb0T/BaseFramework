@@ -1,15 +1,22 @@
+/*
+ * sys_time.c — system time for STM32H750 (Cortex-M7)
+ *
+ * ms timebase: HAL tick (TIM17, 1 ms)
+ * cycle counter: DWT CYCCNT
+ */
+
 #include "sys_time.h"
-#include <stdint.h>
+#include "stm32h7xx.h"
+#include "stm32h7xx_hal.h"
 
-volatile uint32_t sys_time_ms = 0;
-
-uint32_t sys_time_get_ms(void) {
-	return sys_time_ms;
+uint32_t sys_time_get_ms(void)
+{
+    return HAL_GetTick();
 }
 
-// MSPM0G3507 (Cortex-M0+) does NOT have DWT cycle counter.
-// DWT is only available on Cortex-M3/M4/M7.
-// Provide empty stub for compatibility.
-void dwt_init(void) {
-	// NOP on Cortex-M0+
+void dwt_init(void)
+{
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CYCCNT = 0;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }

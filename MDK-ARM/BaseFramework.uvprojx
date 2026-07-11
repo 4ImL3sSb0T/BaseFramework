@@ -341,7 +341,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H750xx,LFS_DEFINES=lfs_armclang_port.h</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/ST/ARM/DSP/Inc;../Core/Inc/SEGGER;../src;../src/service/sfud/inc;../src/service/lfs;../src/bsp/spi_flash;../src/bsp/rtt;../src/bsp/tft_port;../src/service/gfx;../src/service/gfx/Fonts;../src/driver/st7735</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/ST/ARM/DSP/Inc;../Core/Inc/SEGGER;../src;../src/service/sfud/inc;../src/service/lfs;../src/bsp/spi_flash;../src/bsp/rtt;../src/bsp/uart;../src/bsp/tft_port;../src/service/gfx;../src/service/gfx/Fonts;../src/driver/st7735;../src/service/cli;../src/service/cli/log;../src/service/cli/port;../src/service/sys;../src/common/tools</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -818,6 +818,11 @@
               <FileType>1</FileType>
               <FilePath>../src/bsp/rtt/rtt.c</FilePath>
             </File>
+            <File>
+              <FileName>uart_async.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/bsp/uart/uart_async.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -922,6 +927,71 @@
               <FileName>tft_demo.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>../src/app/tft_demo.cpp</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/CLI</GroupName>
+          <Files>
+            <File>
+              <FileName>shell.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/cli/shell.c</FilePath>
+            </File>
+            <File>
+              <FileName>shell_cmd_list.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/cli/shell_cmd_list.c</FilePath>
+            </File>
+            <File>
+              <FileName>shell_companion.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/cli/shell_companion.c</FilePath>
+            </File>
+            <File>
+              <FileName>shell_ext.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/cli/shell_ext.c</FilePath>
+            </File>
+            <File>
+              <FileName>cpu_cmd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/cli/cpu_cmd.c</FilePath>
+            </File>
+            <File>
+              <FileName>log.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/cli/log/log.c</FilePath>
+            </File>
+            <File>
+              <FileName>shell_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/cli/port/shell_port.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/SYS</GroupName>
+          <Files>
+            <File>
+              <FileName>sys_log.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/sys/sys_log.c</FilePath>
+            </File>
+            <File>
+              <FileName>sys_time.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/sys/sys_time.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/Common</GroupName>
+          <Files>
+            <File>
+              <FileName>common_def.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/common/tools/common_def.c</FilePath>
             </File>
           </Files>
         </Group>
