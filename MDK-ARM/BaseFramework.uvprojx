@@ -878,6 +878,11 @@
               <FileType>8</FileType>
               <FilePath>../src/bsp/tft_port/SpiWrapper.cpp</FilePath>
             </File>
+            <File>
+              <FileName>tft_fb.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/bsp/tft_port/tft_fb.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

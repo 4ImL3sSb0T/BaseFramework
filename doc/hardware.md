@@ -30,7 +30,7 @@
 | 外设 | 实例 | 引脚 | 参数 | 中断/DMA |
 |------|------|------|------|----------|
 | USART1 | TX: PA9, RX: PA10 | 115200-8-N-1, 无流控, FIFO已禁用 | DMA1_Stream1 (RX, Circular), DMA1_Stream2 (TX, Normal), USART1_IRQn (pri=5) |
-| SPI1 | PB3 (SCK), PB5 (MOSI) | Master, 6MHz (PLL1Q=96MHz÷16), CPOL=1 CPHA=1, MSB, 8-bit, 仅发送(1-Line), 软件 NSS | 外接 ST7735 TFT LCD |
+| SPI1 | PB3 (SCK), PB5 (MOSI) | Master, 6MHz (PLL1Q=96MHz÷16), CPOL=0 CPHA=1Edge (Mode0), MSB, 8-bit, 仅发送(1-Line), 软件 NSS | 外接 ST7735 TFT LCD |
 | SPI2 | PB13 (SCK), PB14 (MISO), PB15 (MOSI), PB12 (CS) | Master, 48 Mbps, CPOL=1 CPHA=1, MSB, 8-bit, 软件 NSS | 外接 SPI Flash，CS 由 PB12 GPIO 控制 |
 | TIM17 | 内部 | HAL 时基（1ms） | TIM17_IRQn → HAL_IncTick() |
 | GPIO | PC0 | 红色 LED（推挽输出） | — |
@@ -115,6 +115,7 @@
 | DC 引脚 | PB4 (GPIO 软件控制) |
 | RST 引脚 | PB7 (GPIO 软件控制) |
 | SPI 时钟 | 6MHz (PLL1Q=96MHz ÷ 16) |
-| SPI 模式 | CPOL=High, CPHA=2Edge, MSB |
-| 渲染方式 | 帧缓冲 (GFXcanvas16, 40KB) |
-| Adafruit 驱动 | ST7735 → ST77xx → SPITFT → GFX |
+| SPI 模式 | Mode0 (CPOL=0, CPHA=1Edge), MSB |
+| 渲染方式 | 离屏帧缓冲 RGB565（`tft_fb`，最大 128×160×2 ≈ 40KB 静态区） |
+| 刷新方式 | 先画到 buffer，再 `tft_fb_flush()` / `tft_fb_flush_rect()` 批量 SPI 推送 |
+| Adafruit 驱动 | ST7735 → ST77xx → SPITFT → GFX；应用层经 `src/bsp/tft_port/tft_fb.*` |
