@@ -1,0 +1,9 @@
+[project]
+name = "map-analyzer"
+version = "1.0.0"
+description = "ARM armlink (.map) flash/RAM analyzer for Keil MDK projects"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+map-analyzer = "analyze_map:main"
