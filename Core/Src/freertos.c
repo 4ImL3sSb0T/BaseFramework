@@ -58,7 +58,11 @@ extern void tft_demo_task(void);
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+#if (configAPPLICATION_ALLOCATED_HEAP == 1)
+/* FreeRTOS heap_4 pool in DTCM (section .dtcm_heap → RW_IRAM1) */
+__attribute__((section(".dtcm_heap"), aligned(8)))
+uint8_t ucHeap[configTOTAL_HEAP_SIZE];
+#endif
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;

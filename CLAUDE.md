@@ -38,7 +38,7 @@ STM32H750VBTx (Cortex-M7) 嵌入式基础框架，基于 STM32CubeMX 生成，�
 
 ### FreeRTOS 层
 - **FreeRTOS V10.3.1**，通过 CMSIS-RTOS V2 API 使用 (`cmsis_os2.c`)
-- **默认配置**：抢占式、heap_4、56 优先级、1kHz tick、堆大小 64KB
+- **默认配置**：抢占式、heap_4、56 优先级、1kHz tick、堆 112KB（DTCM，`ucHeap`）+ 主栈 16KB（DTCM）
 - **默认任务**：`defaultTask`（`osPriorityNormal`, 512B stack），定义在 `Core/Src/freertos.c`
 - **SEGGER SystemView** 已集成（trace 宏通过 `SEGGER_SYSVIEW_FreeRTOS.h` 注入），文件位于 `Core/Inc/SEGGER/` 和 `Core/Src/SEGGER/`
 

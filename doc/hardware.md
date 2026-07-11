@@ -70,7 +70,28 @@
 | Region0 | 0x00000000 | 4GB | 禁止访问 | No | No | Yes |
 | Region1 | 0x30000000 | 64KB | 全访问 | No | No | No |
 
-说明：Region0 作为默认背景区域禁止所有访问，Region1 允许访问 0x30000000 区域的 64KB DMA 缓冲区。
+说明：Region0 作为默认背景区域禁止所有访问，Region1 将 D2 SRAM1 前 64KB（`0x30000000`）设为 **non-cacheable**，专供 DMA 缓冲。
+
+### 链接内存布局（`MDK-ARM/BaseFramework.sct`）
+
+| 区域 | 基址 | 大小 | 内容 | Cache / 备注 |
+|------|------|------|------|----------------|
+| Flash | `0x08000000` | 128 KB | 代码 + RO | — |
+| DTCM | `0x20000000` | 128 KB | FreeRTOS heap 112KB + 主栈 16KB | 不走 D-Cache；**DMA 不可访问** |
+| AXI SRAM | `0x24000000` | 512 KB | `.data` / `.bss` | 可 Cache |
+| D2 SRAM1 | `0x30000000` | 64 KB | `.dma_buf`（如 USART1 DMA） | MPU Region1 不可 Cache |
+
+**DTCM 内部（低→高，必须拆成两个 execution region）**
+
+| 地址 | 大小 | 用途 |
+|------|------|------|
+| `0x20000000` | 112 KB | FreeRTOS `ucHeap`（`.dtcm_heap` / `RW_DTCM_HEAP`） |
+| `0x2001C000` | 16 KB | 主栈 MSP（`STACK` / `RW_DTCM_STACK`），`__initial_sp = 0x20020000` |
+
+STACK 与 heap **不能**放在同一 scatter 执行区：启动 scatter-load 清 ZI 时会把正在用的主栈清掉，导致进不了 `main`。  
+C 库 `Heap_Size=0x400` 在 AXI；任务栈 / 队列从 FreeRTOS heap（DTCM）分配。
+
+工程已启用自定义 scatter（`useFile=1`）。新增 DMA buffer：`__attribute__((section(".dma_buf"), aligned(32)))`，勿放 DTCM。
 
 ## HAL 模块
 
@@ -96,7 +117,7 @@
 | API | CMSIS-RTOS V2 |
 | 调度 | 抢占式, 1kHz tick |
 | 优先级 | 56 级 |
-| 堆 | heap_4, 64KB |
+| 堆 | heap_4, 112KB（DTCM `.dtcm_heap`）；主栈 16KB（DTCM） |
 | 默认任务 | defaultTask, osPriorityNormal, 512B stack |
 
 ## 调试接口

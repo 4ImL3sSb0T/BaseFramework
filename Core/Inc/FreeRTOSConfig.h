@@ -166,6 +166,11 @@ standard names. */
 /* USER CODE BEGIN Defines */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
 
+/* DTCM 128KB: 16KB main stack + 112KB FreeRTOS heap (see BaseFramework.sct) */
+#undef configTOTAL_HEAP_SIZE
+#define configTOTAL_HEAP_SIZE                    ((size_t)(112U * 1024U))
+#define configAPPLICATION_ALLOCATED_HEAP         1
+
 /* vTaskList / formatted task stats (shell `cpu` command) */
 #define configUSE_STATS_FORMATTING_FUNCTIONS 1
 

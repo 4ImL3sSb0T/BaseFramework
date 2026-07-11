@@ -14,9 +14,15 @@
 #define UART_ASYNC_TX_STREAM_BUFFER_ITEM_SIZE sizeof(uint8_t)
 #define UART_ASYNC_RX_STREAM_BUFFER_ITEM_SIZE sizeof(uint8_t)
 
-uint8_t uart_tx_dma_buffer[UART_ASYNC_TX_DMA_BUFFER_SIZE] __attribute__((aligned(32)));
+/*
+ * DMA buffers live in D2 SRAM @ 0x30000000 (.dma_buf).
+ * MPU Region1 marks that 64KB non-cacheable — no D-Cache clean/invalidate needed.
+ * Do NOT place these in DTCM (0x20000000): DMA cannot access DTCM on H7.
+ */
+#define UART_DMA_BUF __attribute__((section(".dma_buf"), aligned(32)))
 
-uint8_t uart_rx_dma_buffer[UART_ASYNC_RX_DMA_BUFFER_SIZE] __attribute__((aligned(32)));
+UART_DMA_BUF uint8_t uart_tx_dma_buffer[UART_ASYNC_TX_DMA_BUFFER_SIZE];
+UART_DMA_BUF uint8_t uart_rx_dma_buffer[UART_ASYNC_RX_DMA_BUFFER_SIZE];
 
 static StreamBufferHandle_t uart_tx_stream_buffer = NULL;
 static StreamBufferHandle_t uart_rx_stream_buffer = NULL;
