@@ -341,7 +341,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H750xx,LFS_DEFINES=lfs_armclang_port.h</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/ST/ARM/DSP/Inc;../Core/Inc/SEGGER;../src;../src/service/sfud/inc;../src/service/lfs;../src/bsp/spi_flash;../src/bsp/debug;../src/bsp/tft_port;../src/service/gfx;../src/service/gfx/Fonts;../src/driver/st7735</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/ST/ARM/DSP/Inc;../Core/Inc/SEGGER;../src;../src/service/sfud/inc;../src/service/lfs;../src/bsp/spi_flash;../src/bsp/rtt;../src/bsp/tft_port;../src/service/gfx;../src/service/gfx/Fonts;../src/driver/st7735</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -814,9 +814,9 @@
               <FilePath>../src/bsp/spi_flash/spi_flash.c</FilePath>
             </File>
             <File>
-              <FileName>debug.c</FileName>
+              <FileName>rtt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../src/bsp/debug/debug.c</FilePath>
+              <FilePath>../src/bsp/rtt/rtt.c</FilePath>
             </File>
           </Files>
         </Group>

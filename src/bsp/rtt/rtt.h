@@ -1,11 +1,11 @@
 /*
- * debug.h — Debug output BSP
+ * rtt.h — SEGGER RTT output BSP
  *
  * SEGGER RTT channel 0 printf.
  */
 
-#ifndef _BSP_DEBUG_H_
-#define _BSP_DEBUG_H_
+#ifndef _BSP_RTT_H_
+#define _BSP_RTT_H_
 
 #include <stdarg.h>
 
@@ -21,4 +21,4 @@ void log_rtt_println(const char *text);
 }
 #endif
 
-#endif /* _BSP_DEBUG_H_ */
+#endif /* _BSP_RTT_H_ */

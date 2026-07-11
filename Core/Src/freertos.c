@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "debug.h"
+#include "rtt.h"
 #include "spi_flash.h"
 #include "sfud.h"
 #include "lfs.h"

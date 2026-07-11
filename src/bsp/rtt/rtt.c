@@ -1,8 +1,8 @@
 /*
- * debug.c — SEGGER RTT debug output
+ * rtt.c — SEGGER RTT output
  */
 
-#include "debug.h"
+#include "rtt.h"
 #include "SEGGER_RTT.h"
 
 void log_rtt_printf(const char *format, ...) {

@@ -8,7 +8,7 @@
 
 #include "../inc/sfud.h"
 #include "spi_flash.h"
-#include "debug.h"
+#include "rtt.h"
 #include "main.h"
 #include <stdarg.h>
 #include <stdio.h>
