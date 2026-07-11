@@ -10,10 +10,20 @@
 #include "spi_flash.h"
 #include "rtt.h"
 #include "main.h"
+#include "FreeRTOS.h"
+#include "task.h"
 #include <stdarg.h>
 #include <stdio.h>
 
-static void retry_delay(void) { HAL_Delay(1); }
+/* Yield while waiting for flash ready; HAL_Delay only if scheduler not up. */
+static void retry_delay(void)
+{
+    if (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) {
+        vTaskDelay(pdMS_TO_TICKS(1));
+    } else {
+        HAL_Delay(1);
+    }
+}
 
 /* ── SFUD required: SPI write then read ──────────────────────────────── */
 

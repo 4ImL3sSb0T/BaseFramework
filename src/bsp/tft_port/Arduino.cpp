@@ -1,18 +1,42 @@
 #include "Arduino.h"
 #include "main.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
+/*
+ * Prefer FreeRTOS delay when the scheduler is running (yields CPU).
+ * Fall back to HAL_Delay only before osKernelStart() / from rare bare-metal paths.
+ */
 void delay(uint32_t ms) {
-  HAL_Delay(ms);
+  if (ms == 0U) {
+    return;
+  }
+  if (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) {
+    TickType_t ticks = pdMS_TO_TICKS(ms);
+    if (ticks == 0) {
+      ticks = 1; /* sub-tick ms still wait at least one tick */
+    }
+    vTaskDelay(ticks);
+  } else {
+    HAL_Delay(ms);
+  }
 }
 
 void delayMicroseconds(uint32_t us) {
+  if (us == 0U) {
+    return;
+  }
+  /* Short busy-wait (DWT). Not used for multi-ms TFT init delays. */
   uint32_t start = DWT->CYCCNT;
   uint32_t cycles = us * (SystemCoreClock / 1000000U);
-  while ((DWT->CYCCNT - start) < cycles) { __NOP(); }
+  while ((DWT->CYCCNT - start) < cycles) {
+    __NOP();
+  }
 }
 
 void pinMode(int8_t pin, uint8_t mode) {
-  (void)pin; (void)mode;
+  (void)pin;
+  (void)mode;
 }
 
 void digitalWrite(int8_t pin, uint8_t val) {
