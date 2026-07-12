@@ -1492,6 +1492,53 @@
         </Group>
         <Group>
           <GroupName>Application/User/App</GroupName>
+          <Files>
+            <File>
+              <FileName>loader_cli.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\app\loader_cli.c</FilePath>
+            </File>
+            <File>
+              <FileName>loader_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\src\app\loader_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>loader_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\app\loader_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>loader_core.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\src\app\loader_core.h</FilePath>
+            </File>
+            <File>
+              <FileName>loader_runtime.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\app\loader_runtime.c</FilePath>
+            </File>
+            <File>
+              <FileName>loader_runtime.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\src\app\loader_runtime.h</FilePath>
+            </File>
+            <File>
+              <FileName>loader_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\app\loader_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>loader_task.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\src\app\loader_task.h</FilePath>
+            </File>
+            <File>
+              <FileName>loader_ui.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\app\loader_ui.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Application/User/MujicaUI</GroupName>
