@@ -16,6 +16,42 @@ pid_controller_t pid_current = {
     .dt = 0.01f // Example sampling time (100 Hz)
 };
 
+static void loader_core_loop_control(loader_runtime_t* runtime) {
+    switch (runtime->mode) {
+    case LOADER_MODE_CC:
+        /* Constant Current mode control logic */
+        break;
+    case LOADER_MODE_CV:
+        /* Constant Voltage mode control logic */
+        break;
+    case LOADER_MODE_CP:
+        /* Constant Power mode control logic */
+        break;
+    case LOADER_MODE_CR:
+        /* Constant Resistance mode control logic */
+        break;
+    default:
+        break;
+    }
+
+}
+
+static void loader_core_handle_error(loader_runtime_t* runtime) {
+    switch (runtime->error) {
+    case LOADER_ERROR_OVERCURRENT:
+        /* Handle overcurrent error */
+        break;
+    case LOADER_ERROR_OVERTEMPERATURE:
+        /* Handle overtemperature error */
+        break;
+    case LOADER_ERROR_UNDERVOLTAGE:
+        /* Handle undervoltage error */
+        break;
+    default:
+        break;
+    }
+}
+
 exit_code_t loader_core_init(void) {
     loader_runtime_init();
     sense_init(SENSE_MODE_ADC);
@@ -36,6 +72,19 @@ void loader_core_control_update(void) {
     runtime.power_measurement = current * voltage; // Calculate power
     loader_runtime_set(&runtime);
 
-    /* 控制环写执行器入口：RUN 且允许输出时 load_out_set(out_norm)，否则关断 */
-    /* load_out_set(pid_current.output); */
+    switch (runtime.state) {
+        case LOADER_STATE_RUNNING:
+            loader_core_loop_control(&runtime);
+            break;
+        case LOADER_STATE_IDLE:
+        case LOADER_STATE_PAUSED:
+            load_out_set(0.0f); // Turn off output when paused
+            break;
+        case LOADER_STATE_ERROR:
+            loader_core_handle_error(&runtime);
+            break;
+        default:
+            load_out_set(0.0f);
+            break;
+    }
 }
