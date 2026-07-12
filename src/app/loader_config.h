@@ -11,19 +11,19 @@
 #define LOADER_DEFAULT_PID_CURRENT_KP 1.0f
 #define LOADER_DEFAULT_PID_CURRENT_KI 0.01f
 #define LOADER_DEFAULT_PID_CURRENT_KD 0.0f
-#define LOADER_DEFAULT_PID_CURRENT_OUTPUT_MAX 3.3f // Example max output voltage for current control
+#define LOADER_DEFAULT_PID_CURRENT_OUTPUT_MAX 5.0f // Example max output voltage for current control
 #define LOADER_DEFAULT_PID_CURRENT_OUTPUT_MIN 0.0f // Example min output voltage for current control
-#define LOADER_DEFAULT_PID_CURRENT_INTEGRAL_MAX 10.0f // Prevent integral windup
-#define LOADER_DEFAULT_PID_CURRENT_INTEGRAL_MIN -10.0f // Prevent integral windup
+#define LOADER_DEFAULT_PID_CURRENT_INTEGRAL_MAX 1.0f // Prevent integral windup
+#define LOADER_DEFAULT_PID_CURRENT_INTEGRAL_MIN -1.0f // Prevent integral windup
 #define LOADER_DEFAULT_PID_CURRENT_DT 0.0005f // Example sampling time (2000 Hz)
 
 #define LOADER_DEFAULT_PID_VOLTAGE_KP 0.1f
 #define LOADER_DEFAULT_PID_VOLTAGE_KI 0.01f
 #define LOADER_DEFAULT_PID_VOLTAGE_KD 0.005f
-#define LOADER_DEFAULT_PID_VOLTAGE_OUTPUT_MAX 3.3f // Example max output voltage for voltage control
+#define LOADER_DEFAULT_PID_VOLTAGE_OUTPUT_MAX 32.0 // Example max output voltage for voltage control
 #define LOADER_DEFAULT_PID_VOLTAGE_OUTPUT_MIN 0.0f // Example min output voltage for voltage control
-#define LOADER_DEFAULT_PID_VOLTAGE_INTEGRAL_MAX 10.0f // Prevent integral windup
-#define LOADER_DEFAULT_PID_VOLTAGE_INTEGRAL_MIN -10.0f // Prevent integral windup
+#define LOADER_DEFAULT_PID_VOLTAGE_INTEGRAL_MAX 5.0f // Prevent integral windup
+#define LOADER_DEFAULT_PID_VOLTAGE_INTEGRAL_MIN -5.0f // Prevent integral windup
 #define LOADER_DEFAULT_PID_VOLTAGE_DT 0.01f // Example sampling time (100 Hz)
 
 
