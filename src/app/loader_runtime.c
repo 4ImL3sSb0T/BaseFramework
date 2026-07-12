@@ -16,7 +16,9 @@ static loader_runtime_t g_loader_runtime = {
 };
 
 exit_code_t loader_runtime_init(void) {
-    g_loader_runtime_mutex = xSemaphoreCreateMutex();
+    if (g_loader_runtime_mutex == NULL) {
+        g_loader_runtime_mutex = xSemaphoreCreateMutex();
+    }
     if (!g_loader_runtime_mutex) {
         return EXIT_FAIL; // Failed to create mutex
     }

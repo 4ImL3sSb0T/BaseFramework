@@ -35,6 +35,8 @@ typedef struct {
     float current_measurement;
     float voltage_setpoint;
     float voltage_measurement;
+    float power_setpoint;
+    float power_measurement;
     float temperature_measurement;
     float temperature_setpoint;
 } loader_runtime_t;
