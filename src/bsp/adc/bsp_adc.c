@@ -2,7 +2,7 @@
 #include "opamp.h"
 
 #define ADC_PGA_BUFFER_LENGTH 1
-#define ADC_COM_BUFFER_LENGTH 2
+#define ADC_COM_BUFFER_LENGTH 3
 uint16_t adc_com_buffer[ADC_COM_BUFFER_LENGTH];
 uint16_t adc_pga_buffer[ADC_PGA_BUFFER_LENGTH];
 
@@ -25,6 +25,8 @@ uint16_t bsp_adc_get_raw_value(bsp_adc_channel_t channel) {
             return adc_com_buffer[0];
         case BSP_ADC_CURRENT_CH:
             return adc_com_buffer[1];
+        case BSP_ADC_TEMP_CH:
+            return adc_com_buffer[2];
         case BSP_ADC_PGA2ADC_CH:
             return adc_pga_buffer[0];
         default:

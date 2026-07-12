@@ -57,6 +57,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define FUN_PWM_Pin GPIO_PIN_5
+#define FUN_PWM_GPIO_Port GPIOE
 #define USR_KEY_Pin GPIO_PIN_13
 #define USR_KEY_GPIO_Port GPIOC
 #define RED_Pin GPIO_PIN_0
@@ -74,6 +76,8 @@ void Error_Handler(void);
 #define Voltage_CH_GPIO_Port GPIOA
 #define Current_CH_Pin GPIO_PIN_7
 #define Current_CH_GPIO_Port GPIOA
+#define LOADER_TEMP_Pin GPIO_PIN_1
+#define LOADER_TEMP_GPIO_Port GPIOB
 #define FLASH_CS_Pin GPIO_PIN_12
 #define FLASH_CS_GPIO_Port GPIOB
 #define TFT_DC_Pin GPIO_PIN_4

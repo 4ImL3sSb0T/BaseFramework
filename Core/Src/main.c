@@ -121,6 +121,7 @@ int main(void)
   MX_DAC1_Init();
   MX_ADC2_Init();
   MX_OPAMP1_Init();
+  MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
   hspi2.Instance->CFG1 = (hspi2.Instance->CFG1 & ~SPI_CFG1_MBR)
                        | (2UL << SPI_CFG1_MBR_Pos);
