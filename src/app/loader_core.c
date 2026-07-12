@@ -1,40 +1,57 @@
 #include "loader_core.h"
 #include "bsp/tim/bsp_timer.h"
 #include "service/load/load_out.h"
+#include "loader_config.h"
+#include "stdbool.h"
 
 pid_controller_t pid_current = {
-    .kp = 0.1f,
-    .ki = 0.01f,
-    .kd = 0.005f,
+    .kp = LOADER_DEFAULT_PID_CURRENT_KP,
+    .ki = LOADER_DEFAULT_PID_CURRENT_KI,
+    .kd = LOADER_DEFAULT_PID_CURRENT_KD,
     .error_prev = 0.0f,
     .integral = 0.0f,
     .output = 0.0f,
-    .output_max = 12.0f, // Example max output voltage
-    .output_min = 0.0f,  // Example min output voltage
-    .integral_max = 10.0f, // Prevent integral windup
-    .integral_min = -10.0f, // Prevent integral windup
-    .dt = 0.01f // Example sampling time (100 Hz)
+    .output_max = LOADER_DEFAULT_PID_CURRENT_OUTPUT_MAX,
+    .output_min = LOADER_DEFAULT_PID_CURRENT_OUTPUT_MIN,
+    .integral_max = LOADER_DEFAULT_PID_CURRENT_INTEGRAL_MAX,
+    .integral_min = LOADER_DEFAULT_PID_CURRENT_INTEGRAL_MIN,
+    .dt = LOADER_DEFAULT_PID_CURRENT_DT
+};
+
+pid_controller_t pid_voltage = {
+    .kp = LOADER_DEFAULT_PID_VOLTAGE_KP,
+    .ki = LOADER_DEFAULT_PID_VOLTAGE_KI,
+    .kd = LOADER_DEFAULT_PID_VOLTAGE_KD,
+    .error_prev = 0.0f,
+    .integral = 0.0f,
+    .output = 0.0f,
+    .output_max = LOADER_DEFAULT_PID_VOLTAGE_OUTPUT_MAX,
+    .output_min = LOADER_DEFAULT_PID_VOLTAGE_OUTPUT_MIN,
+    .integral_max = LOADER_DEFAULT_PID_VOLTAGE_INTEGRAL_MAX,
+    .integral_min = LOADER_DEFAULT_PID_VOLTAGE_INTEGRAL_MIN,
+    .dt = LOADER_DEFAULT_PID_VOLTAGE_DT
 };
 
 static void loader_core_loop_control(loader_runtime_t* runtime) {
     switch (runtime->mode) {
     case LOADER_MODE_CC:
         float pid_output = pid_calculate(&pid_current, runtime->current_setpoint, runtime->current_measurement);
-        load_out_set(pid_output);
+        load_out_set_current(pid_output); // Placeholder for PID output
         break;
     case LOADER_MODE_CV:
-        float pid_output = pid_calculate(&pid_current, runtime->voltage_setpoint, runtime->voltage_measurement);
-        load_out_set(pid_output);
+        float inside_loop = pid_calculate(&pid_voltage, runtime->voltage_setpoint, runtime->voltage_measurement);
+        float current = pid_calculate(&pid_current, inside_loop, runtime->current_measurement);
+        load_out_set_current(current);
         break;
     case LOADER_MODE_CP:
         /* Constant Power mode control logic */
-        float pid_output = pid_calculate(&pid_current, runtime->power_setpoint, runtime->power_measurement);
-        load_out_set(pid_output);
+        float current = pid_calculate(&pid_current, runtime->power_setpoint, runtime->power_measurement);
+        load_out_set_current(current);
         break;
     case LOADER_MODE_CR:
         /* Constant Resistance mode control logic */
-        float pid_output = pid_calculate(&pid_current, runtime->resistance_setpoint, runtime->resistance_measurement);
-        load_out_set(pid_output);
+        float current = pid_calculate(&pid_current, runtime->resistance_setpoint, runtime->resistance_measurement);
+        load_out_set_current(current);
         break;
     default:
         break;
@@ -62,9 +79,11 @@ exit_code_t loader_core_init(void) {
     loader_runtime_init();
     sense_init(SENSE_MODE_ADC);
     load_out_init();
+    load_out_enable(true);
     bsp_timer_init();
     bsp_timer_register_callback(loader_core_control_update);
-    pid_init(&pid_current, 0.1f, 0.01f, 0.005f, 0.01f, 10.0f, -10.0f); // Initialize PID with example parameters
+    pid_init(&pid_voltage, LOADER_DEFAULT_PID_VOLTAGE_KP, LOADER_DEFAULT_PID_VOLTAGE_KI, LOADER_DEFAULT_PID_VOLTAGE_KD, LOADER_DEFAULT_PID_VOLTAGE_OUTPUT_MAX, LOADER_DEFAULT_PID_VOLTAGE_INTEGRAL_MAX, LOADER_DEFAULT_PID_VOLTAGE_INTEGRAL_MIN);
+    pid_init(&pid_current, LOADER_DEFAULT_PID_CURRENT_KP, LOADER_DEFAULT_PID_CURRENT_KI, LOADER_DEFAULT_PID_CURRENT_KD, LOADER_DEFAULT_PID_CURRENT_OUTPUT_MAX, LOADER_DEFAULT_PID_CURRENT_INTEGRAL_MAX, LOADER_DEFAULT_PID_CURRENT_INTEGRAL_MIN);
     return EXIT_OK;
 }
 
@@ -94,4 +113,8 @@ void loader_core_control_update(void) {
             break;
     }
     loader_runtime_set(&runtime);
+}
+
+void loader_core_state_update(void *arg) {
+
 }

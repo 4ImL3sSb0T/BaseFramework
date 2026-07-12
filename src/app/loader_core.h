@@ -10,5 +10,6 @@
 
 exit_code_t loader_core_init(void);
 void loader_core_control_update(void);
+void loader_core_state_update(void* arg);
 
 #endif /* LOADER_CORE_H */

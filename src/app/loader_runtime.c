@@ -26,15 +26,15 @@ exit_code_t loader_runtime_init(void) {
 }
 
 loader_runtime_t loader_runtime_get() {
-	xSemaphoreTake(g_loader_runtime_mutex, portMAX_DELAY);
+	xSemaphoreTakeFromISR(g_loader_runtime_mutex, portMAX_DELAY);
 	loader_runtime_t runtime = g_loader_runtime;
-	xSemaphoreGive(g_loader_runtime_mutex);
+	xSemaphoreGiveFromISR(g_loader_runtime_mutex, NULL);
 	return runtime;
 }
 
 exit_code_t loader_runtime_set(loader_runtime_t *runtime) {
-    xSemaphoreTake(g_loader_runtime_mutex, portMAX_DELAY);
+    xSemaphoreTakeFromISR(g_loader_runtime_mutex, portMAX_DELAY);
 	g_loader_runtime = *runtime;
-    xSemaphoreGive(g_loader_runtime_mutex);
+    xSemaphoreGiveFromISR(g_loader_runtime_mutex, NULL);
 	return EXIT_OK;
 }
