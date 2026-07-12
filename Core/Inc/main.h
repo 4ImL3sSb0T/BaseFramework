@@ -69,6 +69,7 @@ void Error_Handler(void);
 #define LOADER_REF_GPIO_Port GPIOA
 #define LOADER_FAULT_Pin GPIO_PIN_5
 #define LOADER_FAULT_GPIO_Port GPIOA
+#define LOADER_FAULT_EXTI_IRQn EXTI9_5_IRQn
 #define Voltage_CH_Pin GPIO_PIN_6
 #define Voltage_CH_GPIO_Port GPIOA
 #define Current_CH_Pin GPIO_PIN_7
