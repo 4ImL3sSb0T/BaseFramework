@@ -4,6 +4,8 @@
 typedef enum {
     BSP_ADC_VOLTAGE_CH = 0,
     BSP_ADC_CURRENT_CH,
+    BSP_ADC_PGA2ADC_CH,
+    BSP_ADC_CHANNEL_COUNT
 } bsp_adc_channel_t;
 
 exit_code_t bsp_adc_init(void);
