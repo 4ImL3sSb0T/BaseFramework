@@ -44,8 +44,23 @@ typedef struct {
 } loader_runtime_t;
 
 exit_code_t loader_runtime_init(void);
-loader_runtime_t loader_runtime_get();
-exit_code_t loader_runtime_set(loader_runtime_t *runtime);
 
+/** 整份快照（短临界区，任务/ISR 均可） */
+loader_runtime_t loader_runtime_get(void);
+
+/**
+ * 整份写回。仅用于 UI/CLI 改设定时谨慎使用；
+ * 控制环请用 update_measurements / set_state，避免覆盖设定。
+ */
+exit_code_t loader_runtime_set(const loader_runtime_t *runtime);
+
+/** 只更新测量字段（控制环写） */
+void loader_runtime_update_measurements(float current, float voltage,
+                                        float power, float resistance);
+
+/** 状态 / 故障（控制环或故障 ISR） */
+void loader_runtime_set_state(loader_state_t state);
+void loader_runtime_enter_fault(loader_error_t error);
+void loader_runtime_clear_fault(void);
 
 #endif /* LOADER_RUNTIME_H */

@@ -1304,12 +1304,12 @@
             <File>
               <FileName>load_out.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../src/service/load_out/load_out.c</FilePath>
+              <FilePath>../src/service/load/load_out.c</FilePath>
             </File>
             <File>
               <FileName>load_out.h</FileName>
               <FileType>5</FileType>
-              <FilePath>../src/service/load_out/load_out.h</FilePath>
+              <FilePath>../src/service/load/load_out.h</FilePath>
             </File>
             <File>
               <FileName>sense.c</FileName>
@@ -1570,6 +1570,16 @@
               <FileName>common_def.c</FileName>
               <FileType>1</FileType>
               <FilePath>../src/common/tools/common_def.c</FilePath>
+            </File>
+            <File>
+              <FileName>pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/common/pid/pid.c</FilePath>
+            </File>
+            <File>
+              <FileName>pid.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>../src/common/pid/pid.h</FilePath>
             </File>
           </Files>
         </Group>
