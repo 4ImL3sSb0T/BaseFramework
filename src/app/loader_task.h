@@ -1,9 +1,6 @@
-#include "stdint.h"
+#ifndef LOADER_TASK_H
+#define LOADER_TASK_H
 
-typedef struct{
-    float kp;
-    float ki;
-    float kd;
-    float current_setpoint;
-    float current_measurement;
-} loader_control_t;
+/* 产品入口 / 任务；ui、cli 声明可放这里 — 见 LOADER_DESIGN.md */
+
+#endif /* LOADER_TASK_H */
