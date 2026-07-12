@@ -19,16 +19,22 @@ pid_controller_t pid_current = {
 static void loader_core_loop_control(loader_runtime_t* runtime) {
     switch (runtime->mode) {
     case LOADER_MODE_CC:
-        /* Constant Current mode control logic */
+        float pid_output = pid_calculate(&pid_current, runtime->current_setpoint, runtime->current_measurement);
+        load_out_set(pid_output);
         break;
     case LOADER_MODE_CV:
-        /* Constant Voltage mode control logic */
+        float pid_output = pid_calculate(&pid_current, runtime->voltage_setpoint, runtime->voltage_measurement);
+        load_out_set(pid_output);
         break;
     case LOADER_MODE_CP:
         /* Constant Power mode control logic */
+        float pid_output = pid_calculate(&pid_current, runtime->power_setpoint, runtime->power_measurement);
+        load_out_set(pid_output);
         break;
     case LOADER_MODE_CR:
         /* Constant Resistance mode control logic */
+        float pid_output = pid_calculate(&pid_current, runtime->resistance_setpoint, runtime->resistance_measurement);
+        load_out_set(pid_output);
         break;
     default:
         break;
@@ -70,7 +76,7 @@ void loader_core_control_update(void) {
     runtime.current_measurement = current;
     runtime.voltage_measurement = voltage;
     runtime.power_measurement = current * voltage; // Calculate power
-    loader_runtime_set(&runtime);
+    runtime.resistance_measurement = (current > 0) ? (voltage / current) : 0.0f; // Calculate resistance
 
     switch (runtime.state) {
         case LOADER_STATE_RUNNING:
@@ -87,4 +93,5 @@ void loader_core_control_update(void) {
             load_out_set(0.0f);
             break;
     }
+    loader_runtime_set(&runtime);
 }
