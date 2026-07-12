@@ -1,5 +1,6 @@
 #include "loader_core.h"
 #include "bsp/tim/bsp_timer.h"
+#include "service/load/load_out.h"
 
 pid_controller_t pid_current = {
     .kp = 0.1f,
@@ -18,10 +19,11 @@ pid_controller_t pid_current = {
 exit_code_t loader_core_init(void) {
     loader_runtime_init();
     sense_init(SENSE_MODE_ADC);
+    load_out_init();
     bsp_timer_init();
     bsp_timer_register_callback(loader_core_control_update);
     pid_init(&pid_current, 0.1f, 0.01f, 0.005f, 0.01f, 10.0f, -10.0f); // Initialize PID with example parameters
-	return EXIT_OK;
+    return EXIT_OK;
 }
 
 void loader_core_control_update(void) {
@@ -34,5 +36,6 @@ void loader_core_control_update(void) {
     runtime.power_measurement = current * voltage; // Calculate power
     loader_runtime_set(&runtime);
 
-	return EXIT_OK;
+    /* 控制环写执行器入口：RUN 且允许输出时 load_out_set(out_norm)，否则关断 */
+    /* load_out_set(pid_current.output); */
 }

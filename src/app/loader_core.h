@@ -4,6 +4,7 @@
 /* fsm + mode + control；唯一写执行器 — 见 LOADER_DESIGN.md */
 #include "loader_runtime.h"
 #include "service/sense/sense.h"
+#include "service/load/load_out.h"
 #include "common/tools/common_def.h"
 #include "common/pid/pid.h"
 

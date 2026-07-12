@@ -36,6 +36,7 @@
 | SPI1 | PB3 (SCK), PB5 (MOSI) | Master, 6MHz (PLL1Q=96MHz÷16), CPOL=0 CPHA=1Edge (Mode0), MSB, 8-bit, 仅发送(1-Line), 软件 NSS | 外接 ST7735 TFT LCD |
 | SPI2 | PB13 (SCK), PB14 (MISO), PB15 (MOSI), PB12 (CS) | Master, 48 Mbps, CPOL=1 CPHA=1, MSB, 8-bit, 软件 NSS | 外接 SPI Flash，CS 由 PB12 GPIO 控制 |
 | ADC1 | PA6 (INP3), PA7 (INP7) | 12-bit、单端、扫描 2 通道、连续转换、软件触发；采样 64.5 cycles；DMA 循环写缓冲 | DMA2_Stream0 (ADC1, Circular, halfword, pri=MEDIUM)；DMA2_Stream0_IRQn (NVIC pri=0) |
+| DAC1 | PA4 (`LOADER_REF`) | CH1，12-bit，软件触发，输出缓冲关闭，工厂 trim | 电子负载电流/功率级基准；应用层经 `bsp_dac` / `load_out` 驱动 |
 | TIM17 | 内部 | HAL 时基（1ms） | TIM17_IRQn → HAL_IncTick() |
 | GPIO | PC0 | 红色 LED（推挽输出） | — |
 | GPIO | PC1 | 绿色 LED（推挽输出） | — |
@@ -52,6 +53,8 @@
 
 | 引脚 | 功能 | 模式 | 备注 |
 |------|------|------|------|
+| PA4 | DAC1_OUT1 / `LOADER_REF` | 模拟输出 | 电子负载基准电压 |
+| PA5 | `LOADER_FAULT` | EXTI 上升沿，下拉 | 负载故障输入 |
 | PA6 | ADC1_INP3 / `Voltage_CH` | 模拟输入 | 电压采样通道（Rank1） |
 | PA7 | ADC1_INP7 / `Current_CH` | 模拟输入 | 电流采样通道（Rank2） |
 | PA9 | USART1_TX | AF7 (推挽) | UART 发送 |
@@ -102,7 +105,28 @@ C 库 `Heap_Size=0x400` 在 AXI；任务栈 / 队列从 FreeRTOS heap（DTCM）�
 
 ## HAL 模块
 
-已启用的 HAL 模块：ADC, TIM, UART, GPIO, DMA, MDMA, RCC, FLASH, EXTI, PWR, I2C, SPI, CORTEX, HSEM
+已启用的 HAL 模块：ADC, DAC, TIM, UART, GPIO, DMA, MDMA, RCC, FLASH, EXTI, PWR, I2C, SPI, OPAMP, CORTEX, HSEM
+
+## DAC1（负载基准 LOADER_REF）
+
+CubeMX 已生成 `MX_DAC1_Init()`；应用层启动与码值写入见 `src/bsp/dac`、`src/service/load_out`。
+
+| 参数 | 值 |
+|------|-----|
+| 实例 | DAC1，通道 1 |
+| 引脚 | PA4（`LOADER_REF`） |
+| 分辨率 | 12-bit，右对齐 `DAC_ALIGN_12B_R` |
+| 触发 | 软件触发（`DAC_TRIGGER_SOFTWARE`） |
+| 输出缓冲 | 关闭（`DAC_OUTPUTBUFFER_DISABLE`） |
+| 片上连接 | 关闭 |
+| Trim | 工厂（`DAC_TRIMMING_FACTORY`） |
+| 参考 | VDDA（默认按 3.3 V 标定，见 `LOAD_OUT_VREF`） |
+
+**使用注意**
+
+1. `MX_DAC1_Init()` 只配置外设，**不**自动 Start；须调用 `bsp_dac_init()` / `load_out_init()`。
+2. 软件触发模式下，每次改码后需 SWTRIG（`bsp_dac_set_raw` 内已处理）。
+3. 上层优先使用 `load_out_set(out_norm)`（`out_norm ∈ [0,1]`）；控制环在 `loader_core` 中写执行器，禁止 UI/CLI 直接调 HAL。
 
 ## ADC1（电压 / 电流采样）
 

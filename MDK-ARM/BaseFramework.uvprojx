@@ -1383,6 +1383,51 @@
               <FileType>1</FileType>
               <FilePath>../src/bsp/uart/uart_async.c</FilePath>
             </File>
+            <File>
+              <FileName>bsp_dac.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/bsp/dac/bsp_dac.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_dac.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>../src/bsp/dac/bsp_dac.h</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/bsp/adc/bsp_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_adc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>../src/bsp/adc/bsp_adc.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/LoadOut</GroupName>
+          <Files>
+            <File>
+              <FileName>load_out.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/load_out/load_out.c</FilePath>
+            </File>
+            <File>
+              <FileName>load_out.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>../src/service/load_out/load_out.h</FilePath>
+            </File>
+            <File>
+              <FileName>sense.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/sense/sense.c</FilePath>
+            </File>
+            <File>
+              <FileName>sense.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>../src/service/sense/sense.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
