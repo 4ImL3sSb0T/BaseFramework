@@ -120,3 +120,11 @@ void loader_core_control_update(void) {
 void loader_core_state_update(void *arg) {
 
 }
+
+// 中断触发
+void loader_core_fault_tigger(loader_error_t error) {
+    loader_runtime_t runtime = loader_runtime_get();
+    runtime.error = error;
+    runtime.state = LOADER_STATE_ERROR;
+    loader_runtime_set(&runtime);
+}
