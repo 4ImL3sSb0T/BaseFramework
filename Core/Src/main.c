@@ -20,6 +20,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "adc.h"
+#include "dac.h"
 #include "dma.h"
 #include "spi.h"
 #include "tim.h"
@@ -112,6 +113,7 @@ int main(void)
   MX_SPI1_Init();
   MX_ADC1_Init();
   MX_TIM16_Init();
+  MX_DAC1_Init();
   /* USER CODE BEGIN 2 */
   hspi2.Instance->CFG1 = (hspi2.Instance->CFG1 & ~SPI_CFG1_MBR)
                        | (2UL << SPI_CFG1_MBR_Pos);

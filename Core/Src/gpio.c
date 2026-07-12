@@ -70,6 +70,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : LOADER_FAULT_Pin */
+  GPIO_InitStruct.Pin = LOADER_FAULT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(LOADER_FAULT_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pins : FLASH_CS_Pin TFT_DC_Pin TFT_CS_Pin TFT_RST_Pin */
   GPIO_InitStruct.Pin = FLASH_CS_Pin|TFT_DC_Pin|TFT_CS_Pin|TFT_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
