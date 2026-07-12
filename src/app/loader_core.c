@@ -39,19 +39,21 @@ static void loader_core_loop_control(loader_runtime_t* runtime) {
         load_out_set_current(pid_output); // Placeholder for PID output
         break;
     case LOADER_MODE_CV:
-        float inside_loop = pid_calculate(&pid_voltage, runtime->voltage_setpoint, runtime->voltage_measurement);
-        float current = pid_calculate(&pid_current, inside_loop, runtime->current_measurement);
-        load_out_set_current(current);
+        float current_target = pid_calculate(&pid_voltage, runtime->voltage_setpoint, runtime->voltage_measurement);
+        float out = pid_calculate(&pid_current, current_target, runtime->current_measurement);
+        load_out_set_current(out);
         break;
     case LOADER_MODE_CP:
         /* Constant Power mode control logic */
-        float current = pid_calculate(&pid_current, runtime->power_setpoint, runtime->power_measurement);
-        load_out_set_current(current);
+        float current_target = runtime->power_setpoint / (runtime->voltage_measurement > 0 ? runtime->voltage_measurement : 1.0f);
+        float out = pid_calculate(&pid_current, current_target, runtime->current_measurement);
+        load_out_set_current(out);
         break;
     case LOADER_MODE_CR:
         /* Constant Resistance mode control logic */
-        float current = pid_calculate(&pid_current, runtime->resistance_setpoint, runtime->resistance_measurement);
-        load_out_set_current(current);
+        float current_target = runtime->voltage_measurement / (runtime->resistance_setpoint > 0 ? runtime->resistance_setpoint : 1.0f);
+        float out = pid_calculate(&pid_current, current_target, runtime->current_measurement);
+        load_out_set_current(out);
         break;
     default:
         break;
