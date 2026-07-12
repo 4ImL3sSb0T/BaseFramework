@@ -65,8 +65,8 @@ void Error_Handler(void);
 #define GREEN_GPIO_Port GPIOC
 #define BLUE_Pin GPIO_PIN_2
 #define BLUE_GPIO_Port GPIOC
-#define Votage_CH_Pin GPIO_PIN_6
-#define Votage_CH_GPIO_Port GPIOA
+#define Voltage_CH_Pin GPIO_PIN_6
+#define Voltage_CH_GPIO_Port GPIOA
 #define Current_CH_Pin GPIO_PIN_7
 #define Current_CH_GPIO_Port GPIOA
 #define FLASH_CS_Pin GPIO_PIN_12

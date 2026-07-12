@@ -30,7 +30,7 @@
 ; </h>
 
 ; Main stack in DTCM (see BaseFramework.sct). 16KB for MSP + ISRs.
-Stack_Size		EQU     0x400
+Stack_Size		EQU     0x4000
 
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3
 Stack_Mem       SPACE   Stack_Size
@@ -42,7 +42,7 @@ __initial_sp
 ; </h>
 
 ; Small C-library heap in AXI (not FreeRTOS). Do not set to 0 — needed by libc/C++ startup.
-Heap_Size      EQU     0x200
+Heap_Size      EQU     0x400
 
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3
 __heap_base

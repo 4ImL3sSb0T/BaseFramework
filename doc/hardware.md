@@ -23,6 +23,9 @@
 | APB2 | 120MHz (÷2) |
 | APB3 | 120MHz (÷2) |
 | APB4 | 120MHz (÷2) |
+| PLL2 | M=4, N=10, P/Q/R=2；VCO Medium，输入 Range3（8–16MHz） |
+| PLL2P | 80MHz（作 ADC 内核时钟源） |
+| ADC 内核时钟 | PLL2P / ASYNC_DIV4 ≈ **20MHz** |
 | Systick | 来自于 TIM17（非 Cortex Systick），用于 HAL 时基 |
 
 ## 外设配置
@@ -32,6 +35,7 @@
 | USART1 | TX: PA9, RX: PA10 | 115200-8-N-1, 无流控, FIFO已禁用 | DMA1_Stream1 (RX, Circular), DMA1_Stream2 (TX, Normal), USART1_IRQn (pri=5) |
 | SPI1 | PB3 (SCK), PB5 (MOSI) | Master, 6MHz (PLL1Q=96MHz÷16), CPOL=0 CPHA=1Edge (Mode0), MSB, 8-bit, 仅发送(1-Line), 软件 NSS | 外接 ST7735 TFT LCD |
 | SPI2 | PB13 (SCK), PB14 (MISO), PB15 (MOSI), PB12 (CS) | Master, 48 Mbps, CPOL=1 CPHA=1, MSB, 8-bit, 软件 NSS | 外接 SPI Flash，CS 由 PB12 GPIO 控制 |
+| ADC1 | PA6 (INP3), PA7 (INP7) | 12-bit、单端、扫描 2 通道、连续转换、软件触发；采样 64.5 cycles；DMA 循环写缓冲 | DMA2_Stream0 (ADC1, Circular, halfword, pri=MEDIUM)；DMA2_Stream0_IRQn (NVIC pri=0) |
 | TIM17 | 内部 | HAL 时基（1ms） | TIM17_IRQn → HAL_IncTick() |
 | GPIO | PC0 | 红色 LED（推挽输出） | — |
 | GPIO | PC1 | 绿色 LED（推挽输出） | — |
@@ -40,13 +44,16 @@
 | GPIO | PB4 | TFT DC（推挽输出） | ST7735 数据/命令选择 |
 | GPIO | PB6 | TFT CS（推挽输出） | ST7735 片选 |
 | GPIO | PB7 | TFT RST（推挽输出） | ST7735 复位 |
-| DMA | DMA1_Stream1 | USART1_RX（外设→内存，循环模式） | — |
-| DMA | DMA1_Stream2 | USART1_TX（内存→外设，普通模式） | — |
+| DMA | DMA1_Stream1 | USART1_RX（外设→内存，循环模式） | NVIC pri=5 |
+| DMA | DMA1_Stream2 | USART1_TX（内存→外设，普通模式） | NVIC pri=5 |
+| DMA | DMA2_Stream0 | ADC1（外设→内存，循环模式，半字） | NVIC pri=0 |
 
 ## 引脚总表
 
 | 引脚 | 功能 | 模式 | 备注 |
 |------|------|------|------|
+| PA6 | ADC1_INP3 / `Voltage_CH` | 模拟输入 | 电压采样通道（Rank1） |
+| PA7 | ADC1_INP7 / `Current_CH` | 模拟输入 | 电流采样通道（Rank2） |
 | PA9 | USART1_TX | AF7 (推挽) | UART 发送 |
 | PA10 | USART1_RX | AF7 (推挽) | UART 接收 |
 | PB3 | SPI1_SCK | AF5 (推挽) | ST7735 TFT 时钟 |
@@ -79,7 +86,7 @@
 | Flash | `0x08000000` | 128 KB | 代码 + RO | — |
 | DTCM | `0x20000000` | 128 KB | FreeRTOS heap 112KB + 主栈 16KB | 不走 D-Cache；**DMA 不可访问** |
 | AXI SRAM | `0x24000000` | 512 KB | `.data` / `.bss` | 可 Cache |
-| D2 SRAM1 | `0x30000000` | 64 KB | `.dma_buf`（如 USART1 DMA） | MPU Region1 不可 Cache |
+| D2 SRAM1 | `0x30000000` | 64 KB | `.dma_buf`（USART1 / ADC1 等 DMA） | MPU Region1 不可 Cache |
 
 **DTCM 内部（低→高，必须拆成两个 execution region）**
 
@@ -91,11 +98,42 @@
 STACK 与 heap **不能**放在同一 scatter 执行区：启动 scatter-load 清 ZI 时会把正在用的主栈清掉，导致进不了 `main`。  
 C 库 `Heap_Size=0x400` 在 AXI；任务栈 / 队列从 FreeRTOS heap（DTCM）分配。
 
-工程已启用自定义 scatter（`useFile=1`）。新增 DMA buffer：`__attribute__((section(".dma_buf"), aligned(32)))`，勿放 DTCM。
+工程已启用自定义 scatter（`useFile=1`）。新增 DMA buffer：`__attribute__((section(".dma_buf"), aligned(32)))`，勿放 DTCM（ADC/USART 缓冲均须落在此区，因 D-Cache 已开）。
 
 ## HAL 模块
 
-已启用的 HAL 模块：TIM, UART, GPIO, DMA, MDMA, RCC, FLASH, EXTI, PWR, I2C, SPI, CORTEX, HSEM
+已启用的 HAL 模块：ADC, TIM, UART, GPIO, DMA, MDMA, RCC, FLASH, EXTI, PWR, I2C, SPI, CORTEX, HSEM
+
+## ADC1（电压 / 电流采样）
+
+用于电子负载测量通道，CubeMX 已生成 `MX_ADC1_Init()`；应用层启动转换与物理量换算另见 `src/bsp` / `src/service`。
+
+| 参数 | 值 |
+|------|-----|
+| 实例 | ADC1，独立模式 |
+| 分辨率 | 12-bit |
+| 输入 | 单端 |
+| 扫描 | 使能，`NbrOfConversion=2` |
+| 连续转换 | 使能 |
+| 触发 | 软件触发（`ADC_SOFTWARE_START`） |
+| 数据路径 | `ADC_CONVERSIONDATA_DMA_CIRCULAR` + DMA 循环 |
+| 过载策略 | `ADC_OVR_DATA_OVERWRITTEN` |
+| 采样时间 | 两通道均为 `ADC_SAMPLETIME_64CYCLES_5` |
+| 时钟 | 源 PLL2P=80MHz，分频 `ADC_CLOCK_ASYNC_DIV4` → fADC≈20MHz |
+| DMA | DMA2_Stream0，`DMA_REQUEST_ADC1`，外设→内存，半字，优先级 MEDIUM |
+| DMA 中断 | `DMA2_Stream0_IRQn`，NVIC 优先级 0（**若回调内使用 FreeRTOS API，须改为 ≥5**） |
+
+| Rank | 通道 | 引脚 | Cube 标签 | 用途 |
+|------|------|------|-----------|------|
+| 1 | ADC_CHANNEL_3 (INP3) | PA6 | `Voltage_CH` | 电压采样 |
+| 2 | ADC_CHANNEL_7 (INP7) | PA7 | `Current_CH` | 电流采样 |
+
+**使用注意**
+
+1. 启动转换前建议调用 `HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED)`。
+2. DMA 缓冲须放在 `.dma_buf`（D2 SRAM，non-cacheable），例如 `uint16_t adc_dma_buf[2]` → `[0]=电压 raw，[1]=电流 raw`。
+3. 使用 `HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_dma_buf, 2)` 启动；当前工程默认仅初始化外设，**未**自动 Start。
+4. 粗算吞吐：约 77 ADC 周期/通道 @ 20MHz，双通道一轮约 7.7µs（约 130k 次/秒/通道量级），足够负载控制环使用。
 
 ## SFUD (Serial Flash Universal Driver Library)
 
