@@ -1296,6 +1296,16 @@
               <FileType>5</FileType>
               <FilePath>../src/bsp/adc/bsp_adc.h</FilePath>
             </File>
+            <File>
+              <FileName>bsp_fan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/bsp/fan/bsp_fan.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_fan.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>../src/bsp/fan/bsp_fan.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1320,6 +1330,16 @@
               <FileName>sense.h</FileName>
               <FileType>5</FileType>
               <FilePath>../src/service/sense/sense.h</FilePath>
+            </File>
+            <File>
+              <FileName>fan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/fan/fan.c</FilePath>
+            </File>
+            <File>
+              <FileName>fan.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>../src/service/fan/fan.h</FilePath>
             </File>
           </Files>
         </Group>

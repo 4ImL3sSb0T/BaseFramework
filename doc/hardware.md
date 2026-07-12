@@ -35,8 +35,9 @@
 | USART1 | TX: PA9, RX: PA10 | 115200-8-N-1, 无流控, FIFO已禁用 | DMA1_Stream1 (RX, Circular), DMA1_Stream2 (TX, Normal), USART1_IRQn (pri=5) |
 | SPI1 | PB3 (SCK), PB5 (MOSI) | Master, 6MHz (PLL1Q=96MHz÷16), CPOL=0 CPHA=1Edge (Mode0), MSB, 8-bit, 仅发送(1-Line), 软件 NSS | 外接 ST7735 TFT LCD |
 | SPI2 | PB13 (SCK), PB14 (MISO), PB15 (MOSI), PB12 (CS) | Master, 48 Mbps, CPOL=1 CPHA=1, MSB, 8-bit, 软件 NSS | 外接 SPI Flash，CS 由 PB12 GPIO 控制 |
-| ADC1 | PA6 (INP3), PA7 (INP7) | 12-bit、单端、扫描 2 通道、连续转换、软件触发；采样 64.5 cycles；DMA 循环写缓冲 | DMA2_Stream0 (ADC1, Circular, halfword, pri=MEDIUM)；DMA2_Stream0_IRQn (NVIC pri=0) |
+| ADC1 | PA6 (INP3), PA7 (INP7), PB1 (INP5) | 12-bit、单端、扫描 **3** 通道、连续转换、软件触发；V/I 采样 64.5 cycles，温度 387.5 cycles；DMA 循环 | DMA2_Stream0 (ADC1, Circular, halfword)；应用层 `bsp_adc` / `sense` |
 | DAC1 | PA4 (`LOADER_REF`) | CH1，12-bit，软件触发，输出缓冲关闭，工厂 trim | 电子负载电流/功率级基准；应用层经 `bsp_dac` / `load_out` 驱动 |
+| TIM15 | PE5 (`FUN_PWM` / 风扇) | PWM CH1；Cube PSC=240，ARR 在 `bsp_fan_init` 改为 39（约 25 kHz） | 风扇驱动；`bsp_fan` / `service/fan` |
 | TIM17 | 内部 | HAL 时基（1ms） | TIM17_IRQn → HAL_IncTick() |
 | GPIO | PC0 | 红色 LED（推挽输出） | — |
 | GPIO | PC1 | 绿色 LED（推挽输出） | — |
@@ -57,6 +58,8 @@
 | PA5 | `LOADER_FAULT` | EXTI 上升沿，下拉 | 负载故障输入 |
 | PA6 | ADC1_INP3 / `Voltage_CH` | 模拟输入 | 电压采样通道（Rank1） |
 | PA7 | ADC1_INP7 / `Current_CH` | 模拟输入 | 电流采样通道（Rank2） |
+| PB1 | ADC1_INP5 / `LOADER_TEMP` | 模拟输入 | 负载温度采样（Rank3） |
+| PE5 | TIM15_CH1 / `FUN_PWM` | AF4 PWM | 风扇 PWM 输出 |
 | PA9 | USART1_TX | AF7 (推挽) | UART 发送 |
 | PA10 | USART1_RX | AF7 (推挽) | UART 接收 |
 | PB3 | SPI1_SCK | AF5 (推挽) | ST7735 TFT 时钟 |
@@ -128,36 +131,53 @@ CubeMX 已生成 `MX_DAC1_Init()`；应用层启动与码值写入见 `src/bsp/d
 2. 软件触发模式下，每次改码后需 SWTRIG（`bsp_dac_set_raw` 内已处理）。
 3. 上层优先使用 `load_out_set(out_norm)`（`out_norm ∈ [0,1]`）；控制环在 `loader_core` 中写执行器，禁止 UI/CLI 直接调 HAL。
 
-## ADC1（电压 / 电流采样）
+## ADC1（电压 / 电流 / 温度采样）
 
-用于电子负载测量通道，CubeMX 已生成 `MX_ADC1_Init()`；应用层启动转换与物理量换算另见 `src/bsp` / `src/service`。
+用于电子负载测量通道，CubeMX 已生成 `MX_ADC1_Init()`；应用层见 `src/bsp/adc`、`src/service/sense`。
 
 | 参数 | 值 |
 |------|-----|
 | 实例 | ADC1，独立模式 |
-| 分辨率 | 12-bit |
+| 分辨率 | 12-bit（满量程 raw 0..4095） |
 | 输入 | 单端 |
-| 扫描 | 使能，`NbrOfConversion=2` |
+| 扫描 | 使能，`NbrOfConversion=3` |
 | 连续转换 | 使能 |
 | 触发 | 软件触发（`ADC_SOFTWARE_START`） |
 | 数据路径 | `ADC_CONVERSIONDATA_DMA_CIRCULAR` + DMA 循环 |
 | 过载策略 | `ADC_OVR_DATA_OVERWRITTEN` |
-| 采样时间 | 两通道均为 `ADC_SAMPLETIME_64CYCLES_5` |
+| 采样时间 | V/I：`64.5` cycles；温度：`387.5` cycles |
 | 时钟 | 源 PLL2P=80MHz，分频 `ADC_CLOCK_ASYNC_DIV4` → fADC≈20MHz |
-| DMA | DMA2_Stream0，`DMA_REQUEST_ADC1`，外设→内存，半字，优先级 MEDIUM |
-| DMA 中断 | `DMA2_Stream0_IRQn`，NVIC 优先级 0（**若回调内使用 FreeRTOS API，须改为 ≥5**） |
+| DMA | DMA2_Stream0，`DMA_REQUEST_ADC1`，外设→内存，半字 |
+| 应用缓冲 | `adc_com_buffer[3]` 于 `.dma_buf`：`[0]=V，[1]=I，[2]=Temp` |
 
 | Rank | 通道 | 引脚 | Cube 标签 | 用途 |
 |------|------|------|-----------|------|
 | 1 | ADC_CHANNEL_3 (INP3) | PA6 | `Voltage_CH` | 电压采样 |
 | 2 | ADC_CHANNEL_7 (INP7) | PA7 | `Current_CH` | 电流采样 |
+| 3 | ADC_CHANNEL_5 (INP5) | PB1 | `LOADER_TEMP` | 温度采样 |
+
+**温度换算（service）**
+
+- `T(°C) = raw * SENSE_TEMP_FACTOR`（默认 `0.1`，按传感器标定改 `sense.h`）
+- 不经过「码值→电压→温度」二次换算，与当前硬件约定一致
 
 **使用注意**
 
-1. 启动转换前建议调用 `HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED)`。
-2. DMA 缓冲须放在 `.dma_buf`（D2 SRAM，non-cacheable），例如 `uint16_t adc_dma_buf[2]` → `[0]=电压 raw，[1]=电流 raw`。
-3. 使用 `HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_dma_buf, 2)` 启动；当前工程默认仅初始化外设，**未**自动 Start。
-4. 粗算吞吐：约 77 ADC 周期/通道 @ 20MHz，双通道一轮约 7.7µs（约 130k 次/秒/通道量级），足够负载控制环使用。
+1. `bsp_adc_init()` 内做校准 + `HAL_ADC_Start_DMA`。
+2. DMA 缓冲必须 `.dma_buf`（D-Cache 开启）。
+3. V/I：`Vphys = (raw/4095)*3.3 * FACTOR`，系数在 `sense.h`。
+
+## TIM15（风扇 PWM）
+
+| 参数 | 值 |
+|------|-----|
+| 实例 | TIM15 CH1 |
+| 引脚 | PE5（Cube 标签 `FUN_PWM`） |
+| Cube PSC | 240 |
+| 应用 ARR | `bsp_fan_init` 设为 39 → 约 **25 kHz** |
+| 占空比 | `bsp_fan_set_duty(0..1)` / `fan_set_speed` / `fan_set_percent` |
+
+上层优先用 `service/fan`（enable + 目标转速）；禁止 UI 直接写 TIM 寄存器。
 
 ## SFUD (Serial Flash Universal Driver Library)
 

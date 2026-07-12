@@ -1,6 +1,7 @@
 #include "loader_core.h"
 #include "bsp/tim/bsp_timer.h"
 #include "service/load/load_out.h"
+#include "service/fan/fan.h"
 #include "loader_config.h"
 
 static pid_controller_t pid_current;
@@ -125,6 +126,11 @@ exit_code_t loader_core_init(void)
         return ret;
     }
 
+    ret = fan_init();
+    if (ret != EXIT_OK) {
+        return ret;
+    }
+
     /* 上电默认禁止输出，等 request_run 再 enable */
     (void)load_out_enable(false);
 
@@ -168,6 +174,7 @@ void loader_core_control_update(void)
 {
     float current = sense_get_current();
     float voltage = sense_get_voltage();
+    float temperature = sense_get_temperature();
     float power;
     float resistance;
     loader_runtime_t runtime;
@@ -180,13 +187,14 @@ void loader_core_control_update(void)
     }
 
     /* 只写测量，不整结构回写，避免覆盖 UI 设定 */
-    loader_runtime_update_measurements(current, voltage, power, resistance);
+    loader_runtime_update_measurements(current, voltage, power, resistance, temperature);
 
     runtime = loader_runtime_get();
     runtime.current_measurement = current;
     runtime.voltage_measurement = voltage;
     runtime.power_measurement = power;
     runtime.resistance_measurement = resistance;
+    runtime.temperature_measurement = temperature;
 
     switch (runtime.state) {
     case LOADER_STATE_RUNNING:

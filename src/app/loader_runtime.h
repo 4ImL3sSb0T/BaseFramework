@@ -56,7 +56,8 @@ exit_code_t loader_runtime_set(const loader_runtime_t *runtime);
 
 /** 只更新测量字段（控制环写） */
 void loader_runtime_update_measurements(float current, float voltage,
-                                        float power, float resistance);
+                                        float power, float resistance,
+                                        float temperature);
 
 /** 状态 / 故障（控制环或故障 ISR） */
 void loader_runtime_set_state(loader_state_t state);

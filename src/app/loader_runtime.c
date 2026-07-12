@@ -84,7 +84,8 @@ exit_code_t loader_runtime_set(const loader_runtime_t *runtime)
 }
 
 void loader_runtime_update_measurements(float current, float voltage,
-                                        float power, float resistance)
+                                        float power, float resistance,
+                                        float temperature)
 {
     UBaseType_t ux_saved;
     BaseType_t in_isr;
@@ -94,6 +95,7 @@ void loader_runtime_update_measurements(float current, float voltage,
     g_loader_runtime.voltage_measurement = voltage;
     g_loader_runtime.power_measurement = power;
     g_loader_runtime.resistance_measurement = resistance;
+    g_loader_runtime.temperature_measurement = temperature;
     loader_runtime_exit(ux_saved, in_isr);
 }
 
