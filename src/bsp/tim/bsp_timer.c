@@ -19,7 +19,7 @@ exit_code_t bsp_timer_handler(void) {
     if (g_timer_callback != NULL) {
         g_timer_callback();
     } else {
-        return EXIT_ERROR; // No callback registered
+        return EXIT_FAIL; // No callback registered
     }
     return EXIT_OK;
 }

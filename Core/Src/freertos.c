@@ -34,7 +34,6 @@
 #include "sys_log.h"
 #include "uart_async.h"
 #include "shell_port.h"
-extern void mjc_demo_task(void);
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -152,8 +151,6 @@ void StartDefaultTask(void *argument)
   if (err) log_rtt_println("lfs_mount failed");
   else log_rtt_println("lfs_mount OK");
 
-  /* Blocks: menu UI + KEY (PC13). Does not return. */
-  mjc_demo_task();
 
   /* USER CODE END StartDefaultTask */
 }
