@@ -110,8 +110,14 @@ static void gfx_draw_string(uint16_t x, uint16_t y, const char *str)
 
 static void gfx_set_font_size(uint8_t size)
 {
-    /* 0/1 → size 1 (6x8 cell); >=2 → size 2 */
-    s_text_size = (size >= 2) ? 2 : 1;
+    /* Adafruit built-in font: size 1 = 6x8, 2 = 12x16, 3 = 18x24 */
+    if (size < 1u) {
+        size = 1u;
+    }
+    if (size > 3u) {
+        size = 3u;
+    }
+    s_text_size = size;
     tft_fb().setTextSize(s_text_size);
 }
 

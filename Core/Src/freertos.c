@@ -34,6 +34,7 @@
 #include "sys_log.h"
 #include "uart_async.h"
 #include "shell_port.h"
+#include "app/loader_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -151,6 +152,12 @@ void StartDefaultTask(void *argument)
   if (err) log_rtt_println("lfs_mount failed");
   else log_rtt_println("lfs_mount OK");
 
+  loader_task_init();
+  log_rtt_println("loader_task_init done");
+
+  for (;;) {
+    osDelay(1000);
+  }
 
   /* USER CODE END StartDefaultTask */
 }
