@@ -33,7 +33,7 @@
 | 外设 | 实例 | 引脚 | 参数 | 中断/DMA |
 |------|------|------|------|----------|
 | USART1 | TX: PA9, RX: PA10 | 115200-8-N-1, 无流控, FIFO已禁用 | DMA1_Stream1 (RX, Circular), DMA1_Stream2 (TX, Normal), USART1_IRQn (pri=5) |
-| SPI1 | PB3 (SCK), PB5 (MOSI) | Master, 6MHz (PLL1Q=96MHz÷16), CPOL=0 CPHA=1Edge (Mode0), MSB, 8-bit, 仅发送(1-Line), 软件 NSS | 外接 ST7735 TFT LCD |
+| SPI1 | PB3 (SCK), PB5 (MOSI) | Master, **PLL1Q÷2**（Cube `PRESCALER_2`，约 48MHz 量级，以实测稳定为准）, CPOL=0 CPHA=1Edge (Mode0), MSB, 8-bit, 仅发送(1-Line), 软件 NSS；**TX DMA** = DMA1_Stream2 | 外接 ST7735 TFT LCD |
 | SPI2 | PB13 (SCK), PB14 (MISO), PB15 (MOSI), PB12 (CS) | Master, 48 Mbps, CPOL=1 CPHA=1, MSB, 8-bit, 软件 NSS | 外接 SPI Flash，CS 由 PB12 GPIO 控制 |
 | ADC1 | PA6 (INP3), PA7 (INP7), PB1 (INP5) | 12-bit、单端、扫描 **3** 通道、连续转换、软件触发；V/I 采样 64.5 cycles，温度 387.5 cycles；DMA 循环 | DMA2_Stream0 (ADC1, Circular, halfword)；应用层 `bsp_adc` / `sense` |
 | DAC1 | PA4 (`LOADER_REF`) | CH1，12-bit，软件触发，输出缓冲关闭，工厂 trim | 电子负载电流/功率级基准；应用层经 `bsp_dac` / `load_out` 驱动 |
@@ -217,8 +217,9 @@ CubeMX 已生成 `MX_DAC1_Init()`；应用层启动与码值写入见 `src/bsp/d
 | CS 引脚 | PB6 (GPIO 软件控制) |
 | DC 引脚 | PB4 (GPIO 软件控制) |
 | RST 引脚 | PB7 (GPIO 软件控制) |
-| SPI 时钟 | 6MHz (PLL1Q=96MHz ÷ 16) |
+| SPI 时钟 | Cube `SPI_BAUDRATEPRESCALER_2`（源 PLL1Q≈96MHz → 约 48MHz；以示波器/显示稳定性为准） |
 | SPI 模式 | Mode0 (CPOL=0, CPHA=1Edge), MSB |
-| 渲染方式 | 离屏帧缓冲 RGB565（`tft_fb`，最大 128×160×2 ≈ 40KB 静态区） |
-| 刷新方式 | 先画到 buffer，再 `tft_fb_flush()` / `tft_fb_flush_rect()` 批量 SPI 推送 |
-| Adafruit 驱动 | ST7735 → ST77xx → SPITFT → GFX；应用层经 `src/bsp/tft_port/tft_fb.*` |
+| SPI TX DMA | DMA1_Stream2 / `DMA_REQUEST_SPI1_TX`；大块像素经 `HAL_SPI_Transmit_DMA` |
+| 渲染方式 | 离屏 FB RGB565 LE（AXI）；推送前换端序到 `.dma_buf` 暂存区再 DMA |
+| 刷新方式 | 先画到 buffer，再 `tft_fb_flush()` / `tft_fb_flush_rect()`（整区一次 DMA） |
+| Adafruit 驱动 | ST7735 → ST77xx → SPITFT → GFX；应用层经 `src/bsp/tft_port/tft_fb.*` / `SpiWrapper` |

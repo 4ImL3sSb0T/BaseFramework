@@ -33,7 +33,9 @@ public:
 
   void write(uint8_t b);
   void write16(uint16_t w);
+  /** Byte buffer; large sizes use SPI1 TX DMA (see SpiWrapper.cpp). */
   void writeBytes(const uint8_t *data, size_t size);
+  /** Pixel buffer already in wire byte order; large sizes use DMA. */
   void writePixels(const uint16_t *colors, size_t len);
 
   void setClockDivider(uint8_t div);

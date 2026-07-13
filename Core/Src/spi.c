@@ -53,7 +53,8 @@ void MX_SPI1_Init(void)
   hspi1.Init.CRCPolynomial = 0x0;
   hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
   hspi1.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
-  hspi1.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
+  /* Higher FIFO threshold improves bulk TX with DMA at high SPI clocks */
+  hspi1.Init.FifoThreshold = SPI_FIFO_THRESHOLD_08DATA;
   hspi1.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
   hspi1.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
   hspi1.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
@@ -149,7 +150,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* SPI1 DMA Init */
-    /* SPI1_TX Init */
+    /* SPI1_TX Init — LCD frame push benefits from higher prio + FIFO */
     hdma_spi1_tx.Instance = DMA1_Stream2;
     hdma_spi1_tx.Init.Request = DMA_REQUEST_SPI1_TX;
     hdma_spi1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
@@ -158,8 +159,11 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     hdma_spi1_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
     hdma_spi1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
     hdma_spi1_tx.Init.Mode = DMA_NORMAL;
-    hdma_spi1_tx.Init.Priority = DMA_PRIORITY_LOW;
-    hdma_spi1_tx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    hdma_spi1_tx.Init.Priority = DMA_PRIORITY_HIGH;
+    hdma_spi1_tx.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+    hdma_spi1_tx.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+    hdma_spi1_tx.Init.MemBurst = DMA_MBURST_INC4;
+    hdma_spi1_tx.Init.PeriphBurst = DMA_PBURST_SINGLE;
     if (HAL_DMA_Init(&hdma_spi1_tx) != HAL_OK)
     {
       Error_Handler();
