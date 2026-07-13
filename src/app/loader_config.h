@@ -20,7 +20,14 @@
 #define LOADER_CURRENT_EPSILON              0.001f
 #define LOADER_RESISTANCE_EPSILON           0.01f
 
-/* ---------- 电流内环 PID（输出：设定电流 A） ---------- */
+/**
+ * 软件电流内环开关
+ * 0：外部运放硬件闭环，软件只下发 I_target（当前板级）
+ * 1：软件电流 PID 闭环
+ */
+#define LOADER_USE_SOFTWARE_CURRENT_PID     0
+
+/* ---------- 电流内环 PID（输出：设定电流 A；仅 USE_SOFTWARE_CURRENT_PID=1） ---------- */
 #define LOADER_DEFAULT_PID_CURRENT_KP           1.0f
 #define LOADER_DEFAULT_PID_CURRENT_KI           0.01f
 #define LOADER_DEFAULT_PID_CURRENT_KD           0.0f

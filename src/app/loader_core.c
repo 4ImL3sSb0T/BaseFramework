@@ -4,7 +4,9 @@
 #include "service/fan/fan.h"
 #include "loader_config.h"
 
+#if LOADER_USE_SOFTWARE_CURRENT_PID
 static pid_controller_t pid_current;
+#endif
 static pid_controller_t pid_voltage;
 
 static float loader_core_clampf(float v, float lo, float hi)
@@ -31,29 +33,43 @@ static void loader_core_output_off(void)
 
 static void loader_core_pid_reset_all(void)
 {
+#if LOADER_USE_SOFTWARE_CURRENT_PID
     pid_reset(&pid_current);
+#endif
     pid_reset(&pid_voltage);
+}
+
+/**
+ * 将电流目标下发到功率级
+ * 软件电流环：PID 校正后输出；硬件运放环：直接下发 I_target
+ */
+static void loader_core_apply_current(float i_target, float i_measurement)
+{
+#if LOADER_USE_SOFTWARE_CURRENT_PID
+    float out = pid_calculate(&pid_current, i_target, i_measurement);
+    (void)load_out_set_current(out);
+#else
+    (void)i_measurement;
+    (void)load_out_set_current(i_target);
+#endif
 }
 
 static void loader_core_loop_control(const loader_runtime_t *runtime)
 {
     float i_target;
-    float out;
 
     switch (runtime->mode) {
     case LOADER_MODE_CC: {
         i_target = runtime->current_setpoint;
-        out = pid_calculate(&pid_current, i_target, runtime->current_measurement);
-        (void)load_out_set_current(out);
+        loader_core_apply_current(i_target, runtime->current_measurement);
         break;
     }
     case LOADER_MODE_CV: {
-        /* 电压外环 → I_target，电流内环 → 输出电流 */
+        /* 电压外环 → I_target；电流由软件 PID 或外部运放闭环 */
         i_target = pid_calculate(&pid_voltage,
                                  runtime->voltage_setpoint,
                                  runtime->voltage_measurement);
-        out = pid_calculate(&pid_current, i_target, runtime->current_measurement);
-        (void)load_out_set_current(out);
+        loader_core_apply_current(i_target, runtime->current_measurement);
         break;
     }
     case LOADER_MODE_CP: {
@@ -64,8 +80,7 @@ static void loader_core_loop_control(const loader_runtime_t *runtime)
         }
         i_target = runtime->power_setpoint / v;
         i_target = loader_core_clampf(i_target, 0.0f, LOADER_CURRENT_MAX);
-        out = pid_calculate(&pid_current, i_target, runtime->current_measurement);
-        (void)load_out_set_current(out);
+        loader_core_apply_current(i_target, runtime->current_measurement);
         break;
     }
     case LOADER_MODE_CR: {
@@ -76,8 +91,7 @@ static void loader_core_loop_control(const loader_runtime_t *runtime)
         }
         i_target = runtime->voltage_measurement / r;
         i_target = loader_core_clampf(i_target, 0.0f, LOADER_CURRENT_MAX);
-        out = pid_calculate(&pid_current, i_target, runtime->current_measurement);
-        (void)load_out_set_current(out);
+        loader_core_apply_current(i_target, runtime->current_measurement);
         break;
     }
     default:
@@ -135,6 +149,7 @@ exit_code_t loader_core_init(void)
     (void)load_out_enable(false);
 
     /* pid_init(pid, kp, ki, kd, dt, output_min, output_max) */
+#if LOADER_USE_SOFTWARE_CURRENT_PID
     pid_init(&pid_current,
              LOADER_DEFAULT_PID_CURRENT_KP,
              LOADER_DEFAULT_PID_CURRENT_KI,
@@ -145,6 +160,7 @@ exit_code_t loader_core_init(void)
     pid_set_integral_limits(&pid_current,
                             LOADER_DEFAULT_PID_CURRENT_INTEGRAL_MIN,
                             LOADER_DEFAULT_PID_CURRENT_INTEGRAL_MAX);
+#endif
 
     pid_init(&pid_voltage,
              LOADER_DEFAULT_PID_VOLTAGE_KP,
