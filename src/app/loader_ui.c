@@ -473,14 +473,15 @@ static void ui_draw_home(void)
     (void)snprintf(buf, sizeof(buf), "%5.2fW", (double)s_mock.power);
     ui_text(90, 40, 2, UI_COL_WHITE, UI_COL_BG, buf);
 
-    /* 设定一行 */
-    (void)snprintf(buf, sizeof(buf), "Set %5.3f%s",
-                   (double)ui_active_setpoint(&s_mock), ui_set_unit(s_mock.mode));
-    ui_text(4, 48, 1, UI_COL_DIM, UI_COL_BG, buf);
-
     /* 折线 */
     ui_chart_draw(UI_CHART_X0, UI_CHART_Y0, UI_CHART_X1, UI_CHART_Y1,
                   0.0f, UI_I_MAX, UI_COL_AMBER);
+
+    /* 设定：画在折线图内左上角（chart 之后绘制，叠在网格上） */
+    (void)snprintf(buf, sizeof(buf), "Set %5.3f%s",
+                   (double)ui_active_setpoint(&s_mock), ui_set_unit(s_mock.mode));
+    ui_text((uint16_t)(UI_CHART_X0 + 2u), (uint16_t)(UI_CHART_Y0 + 2u),
+            1, UI_COL_DIM, UI_COL_BG, buf);
 
     ui_text(4, (uint16_t)(UI_CHART_Y1 + 1u), 1, UI_COL_DIM, UI_COL_BG, "I 0");
     ui_text(70, (uint16_t)(UI_CHART_Y1 + 1u), 1, UI_COL_DIM, UI_COL_BG, "2.5");
