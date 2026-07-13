@@ -11,9 +11,7 @@
 #define LOADER_UI_TASK_PRIO     osPriorityBelowNormal
 #endif
 
-#ifndef LOADER_UI_POLL_MS
-#define LOADER_UI_POLL_MS       40u
-#endif
+/* LOADER_UI_POLL_MS 定义在 loader_task.h（默认 67ms ≈ 15fps） */
 
 static void loader_ui_task(void *argument)
 {

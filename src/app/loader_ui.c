@@ -735,7 +735,7 @@ void loader_ui_poll(void)
         }
     }
 
-    s_tick_ms += 40u; /* 与 loader_task 默认 poll 周期一致 */
+    s_tick_ms += LOADER_UI_POLL_MS; /* 与 UI 任务周期一致（默认 67ms ≈ 15fps） */
 
     ui_mock_step();
 
