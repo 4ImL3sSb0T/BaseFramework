@@ -56,7 +56,7 @@ static void loader_core_apply_current(float i_target, float i_measurement)
 
 static void loader_core_loop_control(const loader_runtime_t *runtime)
 {
-    float i_target;
+    float i_target = 0.0f;
 
     switch (runtime->mode) {
     case LOADER_MODE_CC: {
@@ -105,20 +105,6 @@ static void loader_core_handle_error(const loader_runtime_t *runtime)
     (void)runtime;
     /* 任意故障：功率级必须关断 */
     loader_core_output_off();
-}
-
-/** 软件保护：仅判定，关断由 fault_trigger 统一做 */
-static bool loader_core_protect_check(const loader_runtime_t *runtime)
-{
-    if (runtime->current_measurement > LOADER_OVERCURRENT_LIMIT) {
-        loader_core_fault_trigger(LOADER_ERROR_OVERCURRENT);
-        return true;
-    }
-    if (runtime->temperature_measurement > LOADER_OVERTEMPERATURE_LIMIT) {
-        loader_core_fault_trigger(LOADER_ERROR_OVERTEMPERATURE);
-        return true;
-    }
-    return false;
 }
 
 exit_code_t loader_core_init(void)
@@ -188,24 +174,24 @@ exit_code_t loader_core_init(void)
 
 void loader_core_control_update(void)
 {
+// 如果有运放作为电流环, 则直接使用获得电流, 已经有闭环控制
+#if LOADER_USE_SOFTWARE_CURRENT_PID
     float current = sense_get_current();
+#else
+    float current = load_out_get_current();
+#endif
     float voltage = sense_get_voltage();
     float temperature = sense_get_temperature();
-    float power;
-    float resistance;
-    loader_runtime_t runtime;
+    float resistance = 0.0f;
 
-    power = current * voltage;
-    if (loader_core_fabsf(current) > LOADER_CURRENT_EPSILON) {
+    float power = current * voltage;
+    if (loader_core_fabsf(current) > LOADER_CURRENT_EPSILON)
         resistance = voltage / current;
-    } else {
-        resistance = 0.0f;
-    }
 
     /* 只写测量，不整结构回写，避免覆盖 UI 设定 */
     loader_runtime_update_measurements(current, voltage, power, resistance, temperature);
 
-    runtime = loader_runtime_get();
+    loader_runtime_t runtime = loader_runtime_get();
     runtime.current_measurement = current;
     runtime.voltage_measurement = voltage;
     runtime.power_measurement = power;
@@ -214,9 +200,6 @@ void loader_core_control_update(void)
 
     switch (runtime.state) {
     case LOADER_STATE_RUNNING:
-        if (loader_core_protect_check(&runtime)) {
-            break;
-        }
         loader_core_loop_control(&runtime);
         break;
 
@@ -237,8 +220,20 @@ void loader_core_control_update(void)
 
 void loader_core_state_update(void *arg)
 {
-    (void)arg;
-    /* 预留：软定时/请求队列等；启停走 request_* API */
+    loader_runtime_t runtime = loader_runtime_get();
+
+    if (runtime.current_measurement > LOADER_OVERCURRENT_LIMIT) {
+        loader_core_output_off();
+        loader_core_fault_trigger(LOADER_ERROR_OVERCURRENT);
+        loader_runtime_set_state(LOADER_STATE_ERROR);
+        loader_runtime_enter_fault(LOADER_ERROR_OVERCURRENT);
+    }
+    if (runtime.temperature_measurement > LOADER_OVERTEMPERATURE_LIMIT) {
+        loader_core_output_off();
+        loader_core_fault_trigger(LOADER_ERROR_OVERTEMPERATURE);
+        loader_runtime_set_state(LOADER_STATE_ERROR);
+        loader_runtime_enter_fault(LOADER_ERROR_OVERTEMPERATURE);
+    }
 }
 
 exit_code_t loader_core_request_run(void)
