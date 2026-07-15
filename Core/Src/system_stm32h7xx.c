@@ -87,10 +87,9 @@
 
 /* Note: Following vector table addresses must be defined in line with linker
          configuration. */
-/*!< Uncomment the following line if you need to relocate the vector table
-     anywhere in FLASH BANK1 or AXI SRAM, else the vector table is kept at the automatic
-     remap of boot address selected */
-/* #define USER_VECT_TAB_ADDRESS */
+/*!< App runs from QSPI XIP (bootloader maps W25Q64 at 0x90000000).
+     Vector table must match scatter ER_IROM1 base. */
+#define USER_VECT_TAB_ADDRESS
 
 #if defined(USER_VECT_TAB_ADDRESS)
 #if defined(DUAL_CORE) && defined(CORE_CM4)
@@ -118,8 +117,12 @@
 #define VECT_TAB_OFFSET         0x00000000U       /*!< Vector Table base offset field.
                                                        This value must be a multiple of 0x400. */
 #else
-#define VECT_TAB_BASE_ADDRESS   FLASH_BANK1_BASE  /*!< Vector Table base address field.
-                                                       This value must be a multiple of 0x400. */
+/* QSPI XIP: APPLICATION_ADDRESS from Keil define, fallback 0x90000000 */
+#if defined(APPLICATION_ADDRESS)
+#define VECT_TAB_BASE_ADDRESS   APPLICATION_ADDRESS
+#else
+#define VECT_TAB_BASE_ADDRESS   0x90000000U
+#endif
 #define VECT_TAB_OFFSET         0x00000000U       /*!< Vector Table base offset field.
                                                        This value must be a multiple of 0x400. */
 #endif /* VECT_TAB_SRAM */

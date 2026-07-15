@@ -84,20 +84,37 @@
 | PB14 | SPI2_MISO | AF5 (推挽) | SPI Flash 数据输入 |
 | PB15 | SPI2_MOSI | AF5 (推挽) | SPI Flash 数据输出 |
 
+## 启动与 XIP
+
+本应用 **不直接从内部 Flash 启动**。内部 Flash `0x08000000` 存放 **Bootloader**（初始化 QSPI Memory Map 后跳转）；本工程链接并运行在外部 Flash XIP 区。
+
+| 部分 | 地址 | 说明 |
+|------|------|------|
+| Bootloader | `0x08000000` 128 KB 内部 Flash | 映射 W25Q64 → 跳转 App |
+| App（本工程） | `0x90000000` 最多 8 MB QSPI XIP | 代码 + RO；VTOR = `APPLICATION_ADDRESS` |
+| 数据 SPI Flash（SFUD） | SPI2，与 QSPI 独立 | 文件系统等，非 XIP |
+
+- Keil 宏：`APPLICATION_ADDRESS=0x90000000U`
+- VTOR：`Core/Src/system_stm32h7xx.c`（`USER_VECT_TAB_ADDRESS` → `0x90000000`）
+- 下载：使用外部 Flash FLM 算法烧写到 `0x90000000`（勿覆盖内部 Bootloader）
+- **禁止**在 App 中重新初始化 QSPI，或改动 QSPI 引脚（否则 XIP 立即失效）
+
 ## MPU 配置
 
-| 区域 | 基址 | 大小 | 访问 | Cache | Buffer | Shareable |
-|------|------|------|------|-------|--------|-----------|
-| Region0 | 0x00000000 | 4GB | 禁止访问 | No | No | Yes |
-| Region1 | 0x30000000 | 64KB | 全访问 | No | No | No |
+| 区域 | 基址 | 大小 | 访问 | Cache | Buffer | Shareable | 可执行 |
+|------|------|------|------|-------|--------|-----------|--------|
+| Region0 | 0x00000000 | 4GB | 禁止访问 | No | No | Yes | No |
+| Region1 | 0x30000000 | 64KB | 全访问 | No | No | No | No |
+| Region2 | 0x90000000 | 8MB | 全访问 | Yes | Yes | No | **Yes** |
 
-说明：Region0 作为默认背景区域禁止所有访问，Region1 将 D2 SRAM1 前 64KB（`0x30000000`）设为 **non-cacheable**，专供 DMA 缓冲。
+说明：Region0 为背景禁访区（SubRegionDisable=`0x87`，其中含 `0x80000000–0x9FFFFFFF`）。Region1 将 D2 SRAM1 前 64KB 设为 **non-cacheable**（DMA）。Region2 覆盖 QSPI XIP，覆盖背景禁访并允许取指 + Cache。
 
 ### 链接内存布局（`MDK-ARM/BaseFramework.sct`）
 
 | 区域 | 基址 | 大小 | 内容 | Cache / 备注 |
 |------|------|------|------|----------------|
-| Flash | `0x08000000` | 128 KB | 代码 + RO | — |
+| QSPI XIP | `0x90000000` | 8 MB | 代码 + RO（外部 W25Q64） | MPU Region2 Cacheable |
+| 内部 Flash | `0x08000000` | 128 KB | **仅 Bootloader**，本工程不链接 | — |
 | DTCM | `0x20000000` | 128 KB | FreeRTOS heap 112KB + 主栈 16KB | 不走 D-Cache；**DMA 不可访问** |
 | AXI SRAM | `0x24000000` | 512 KB | `.data` / `.bss` | 可 Cache |
 | D2 SRAM1 | `0x30000000` | 64 KB | `.dma_buf`（USART1 / ADC1 等 DMA） | MPU Region1 不可 Cache |
@@ -195,7 +212,7 @@ CubeMX 已生成 `MX_DAC1_Init()`；应用层启动与码值写入见 `src/bsp/d
 | 接口 | SPI2 |
 | 设备表索引 | SFUD_W25QXX_DEVICE_INDEX = 0 |
 | SFDP 支持 | 启用（自动检测 Flash 参数） |
-| QSPI | 未启用 |
+| QSPI | XIP 由 Bootloader 映射到 `0x90000000`（本 App 不初始化 QSPI 外设） |
 | retry.times | 10000 |
 | 调试输出 | SEGGER RTT (channel 0) |
 
