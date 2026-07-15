@@ -33,6 +33,18 @@ extern int shellExecute(int argc, char *argv[]);
 
 extern int cpu_usage(int argc, char *argv[]);
 
+/* app/loader_cli.c — electronic load debug */
+extern int loader_cli_help(int argc, char *argv[]);
+extern int loader_cli_status(int argc, char *argv[]);
+extern int loader_cli_meas(int argc, char *argv[]);
+extern int loader_cli_run(int argc, char *argv[]);
+extern int loader_cli_stop(int argc, char *argv[]);
+extern int loader_cli_clr(int argc, char *argv[]);
+extern int loader_cli_mode(int argc, char *argv[]);
+extern int loader_cli_set(int argc, char *argv[]);
+extern int loader_cli_out(int argc, char *argv[]);
+extern int loader_cli_fan(int argc, char *argv[]);
+
 SHELL_AGENCY_FUNC(shellRun, shellGetCurrent(), (const char *)p1);
 
 /**
@@ -92,6 +104,28 @@ const ShellCommand shellCommandList[] =
 
     SHELL_CMD_ITEM(SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
                    cpu, cpu_usage, show task list / stack HWM),
+
+    /* ---------- electronic load (loader_cli.c) ---------- */
+    SHELL_CMD_ITEM(SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
+                   lhelp, loader_cli_help, loader CLI help),
+    SHELL_CMD_ITEM(SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
+                   lstatus, loader_cli_status, loader full status),
+    SHELL_CMD_ITEM(SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
+                   lmeas, loader_cli_meas, loader measurements),
+    SHELL_CMD_ITEM(SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
+                   lrun, loader_cli_run, loader request RUN),
+    SHELL_CMD_ITEM(SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
+                   lstop, loader_cli_stop, loader request STOP),
+    SHELL_CMD_ITEM(SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
+                   lclr, loader_cli_clr, loader clear fault),
+    SHELL_CMD_ITEM(SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
+                   lmode, loader_cli_mode, loader get/set mode),
+    SHELL_CMD_ITEM(SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
+                   lset, loader_cli_set, loader set setpoint),
+    SHELL_CMD_ITEM(SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
+                   lout, loader_cli_out, loader actuator readback),
+    SHELL_CMD_ITEM(SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
+                   lfan, loader_cli_fan, loader fan control),
 };
 
 const unsigned short shellCommandCount
