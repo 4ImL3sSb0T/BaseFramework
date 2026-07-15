@@ -501,18 +501,42 @@ static void ui_chart_draw(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
 /* 公共装饰                                                                    */
 /* -------------------------------------------------------------------------- */
 
+/** 选中/编辑态配色：靠背景色突出，不用 * / > 等前缀符号 */
+static void ui_sel_style(bool selected, bool editing, uint16_t *pen, uint16_t *bg)
+{
+    if (editing) {
+        *bg  = UI_COL_SELECT;
+        *pen = UI_COL_AMBER;
+    } else if (selected) {
+        *bg  = UI_COL_SELECT;
+        *pen = UI_COL_WHITE;
+    } else {
+        *bg  = UI_COL_BG;
+        *pen = UI_COL_DIM;
+    }
+}
+
 static void ui_draw_tab_bar(ui_page_t active)
 {
     static const char *const tabs[UI_PAGE_COUNT] = { "Home", "Set", "Sts", "Plot", "Info" };
-    ui_fill_rect(0, UI_BOT_Y0, UI_W, (uint16_t)(UI_H - UI_BOT_Y0), UI_COL_BG);
+    const uint16_t bar_h = (uint16_t)(UI_H - UI_BOT_Y0);
+    const uint16_t tab_w = (uint16_t)(UI_W / UI_PAGE_COUNT);
 
-    uint16_t x = 2;
+    ui_fill_rect(0, UI_BOT_Y0, UI_W, bar_h, UI_COL_BG);
+
     for (uint8_t i = 0; i < UI_PAGE_COUNT; i++) {
-        uint16_t pen = (i == (uint8_t)active) ? UI_COL_CYAN : UI_COL_DIM;
-        char mark[12];
-        (void)snprintf(mark, sizeof(mark), "%c%s", (i == (uint8_t)active) ? '*' : ' ', tabs[i]);
-        ui_text(x, (uint16_t)(UI_BOT_Y0 + 3u), 1, pen, UI_COL_BG, mark);
-        x = (uint16_t)(x + 32u);
+        bool sel = (i == (uint8_t)active);
+        uint16_t pen;
+        uint16_t bg;
+        uint16_t x = (uint16_t)(i * tab_w);
+
+        ui_sel_style(sel, false, &pen, &bg);
+        if (sel) {
+            pen = UI_COL_CYAN; /* 当前页签用青色字 + 选中底 */
+            ui_fill_rect(x, UI_BOT_Y0, tab_w, bar_h, bg);
+        }
+        /* size1 约 6px/字；4 字宽 ~24，略居中 */
+        ui_text((uint16_t)(x + 4u), (uint16_t)(UI_BOT_Y0 + 3u), 1, pen, bg, tabs[i]);
     }
 }
 
@@ -606,39 +630,37 @@ static void ui_draw_set(const loader_runtime_t *rt)
     for (uint8_t i = 0; i < n; i++) {
         uint16_t y = (uint16_t)(16u + i * 14u);
         bool sel = (i == s_set_sel);
-        uint16_t bg = sel ? UI_COL_SELECT : UI_COL_BG;
-        uint16_t pen = sel ? UI_COL_WHITE : UI_COL_DIM;
+        bool editing = (sel && s_editing && i == 1u);
+        uint16_t pen;
+        uint16_t bg;
 
+        ui_sel_style(sel, editing, &pen, &bg);
         if (sel) {
             ui_fill_rect(0, y, UI_W, 13, bg);
-        }
-        if (sel && s_editing && i == 1u) {
-            pen = UI_COL_AMBER;
         }
 
         switch (i) {
         case 0:
-            (void)snprintf(buf, sizeof(buf), "%c %-8s [%s]", sel ? '>' : ' ',
+            (void)snprintf(buf, sizeof(buf), "%-8s [%s]",
                            items[i], ui_mode_str(rt->mode));
             break;
         case 1:
-            (void)snprintf(buf, sizeof(buf), "%c %-8s %6.3f%s%s", sel ? '>' : ' ',
-                           items[i], (double)set_v, ui_set_unit(rt->mode),
-                           (s_editing && sel) ? "*" : "");
+            (void)snprintf(buf, sizeof(buf), "%-8s %6.3f%s",
+                           items[i], (double)set_v, ui_set_unit(rt->mode));
             break;
         case 2:
-            (void)snprintf(buf, sizeof(buf), "%c %-8s %s", sel ? '>' : ' ',
+            (void)snprintf(buf, sizeof(buf), "%-8s %s",
                            items[i], on ? "ON" : "OFF");
             break;
         case 3:
-            (void)snprintf(buf, sizeof(buf), "%c %-8s %.2f", sel ? '>' : ' ',
+            (void)snprintf(buf, sizeof(buf), "%-8s %.2f",
                            items[i], (double)s_steps[s_step_idx % 3u]);
             break;
         default:
-            (void)snprintf(buf, sizeof(buf), "%c %s", sel ? '>' : ' ', items[i]);
+            (void)snprintf(buf, sizeof(buf), "%s", items[i]);
             break;
         }
-        ui_text(2, (uint16_t)(y + 2u), 1, pen, bg, buf);
+        ui_text(4, (uint16_t)(y + 2u), 1, pen, bg, buf);
     }
 
     ui_text(2, 100, 1, UI_COL_DIM, UI_COL_BG,
