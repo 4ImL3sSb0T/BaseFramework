@@ -291,7 +291,7 @@ void TIM16_IRQHandler(void)
   /* USER CODE END TIM16_IRQn 0 */
   HAL_TIM_IRQHandler(&htim16);
   /* USER CODE BEGIN TIM16_IRQn 1 */
-
+  bsp_timer_handler();
   /* USER CODE END TIM16_IRQn 1 */
 }
 
@@ -305,7 +305,7 @@ void TIM17_IRQHandler(void)
   /* USER CODE END TIM17_IRQn 0 */
   HAL_TIM_IRQHandler(&htim17);
   /* USER CODE BEGIN TIM17_IRQn 1 */
-  bsp_timer_handler();
+
   /* USER CODE END TIM17_IRQn 1 */
 }
 
