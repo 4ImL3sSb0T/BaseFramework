@@ -80,9 +80,9 @@ void Error_Handler(void);
 #define LOADER_TEMP_GPIO_Port GPIOB
 #define FLASH_CS_Pin GPIO_PIN_12
 #define FLASH_CS_GPIO_Port GPIOB
-#define UI_BACK_Pin GPIO_PIN_12
+#define UI_BACK_Pin GPIO_PIN_10
 #define UI_BACK_GPIO_Port GPIOD
-#define UI_ENT_Pin GPIO_PIN_13
+#define UI_ENT_Pin GPIO_PIN_11
 #define UI_ENT_GPIO_Port GPIOD
 #define UI_DOWN_Pin GPIO_PIN_14
 #define UI_DOWN_GPIO_Port GPIOD
