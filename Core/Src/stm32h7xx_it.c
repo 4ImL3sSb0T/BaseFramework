@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "bsp/adc/bsp_adc.h"
 #include "bsp/tim/bsp_timer.h"
+#include "app/loader_runtime.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
