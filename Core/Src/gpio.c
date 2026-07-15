@@ -59,11 +59,11 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, FLASH_CS_Pin|TFT_DC_Pin|TFT_CS_Pin|TFT_RST_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : USR_KEY_Pin */
-  GPIO_InitStruct.Pin = USR_KEY_Pin;
+  /*Configure GPIO pins : USR_KEY_Pin UI_BACK_Pin UI_ENT_Pin */
+  GPIO_InitStruct.Pin = USR_KEY_Pin|UI_BACK_Pin|UI_ENT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(USR_KEY_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : RED_Pin GREEN_Pin BLUE_Pin */
   GPIO_InitStruct.Pin = RED_Pin|GREEN_Pin|BLUE_Pin;
@@ -85,8 +85,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(FLASH_CS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : UI_BACK_Pin UI_ENT_Pin UI_DOWN_Pin UI_UP_Pin */
-  GPIO_InitStruct.Pin = UI_BACK_Pin|UI_ENT_Pin|UI_DOWN_Pin|UI_UP_Pin;
+  /*Configure GPIO pins : UI_DOWN_Pin UI_UP_Pin */
+  GPIO_InitStruct.Pin = UI_DOWN_Pin|UI_UP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
