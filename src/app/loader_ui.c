@@ -72,7 +72,9 @@ typedef enum {
     UI_KEY_UP = 0,
     UI_KEY_DOWN,
     UI_KEY_ENT,
-    UI_KEY_BACK
+    UI_KEY_BACK,
+    UI_KEY_UP_LONG,   /* 长按开始：Set/Chart 切页 */
+    UI_KEY_DOWN_LONG
 } ui_key_t;
 
 typedef struct {
@@ -336,24 +338,53 @@ static uint8_t ui_read_button_level(uint8_t id)
     return bsp_gpio_key_level(id);
 }
 
-static void ui_btn_on_press(Button *btn)
-{
-    if (btn == NULL || btn->button_id >= UI_BTN_COUNT) {
-        return;
-    }
-    /* 上/下：按下即响应，手感更跟手 */
-    if (btn->button_id == (uint8_t)UI_KEY_UP || btn->button_id == (uint8_t)UI_KEY_DOWN) {
-        ui_key_push((ui_key_t)btn->button_id);
-    }
-}
+/* 长按已消费：松手 PRESS_UP 时不再当短按（bit = button_id） */
+static uint8_t s_key_long_consumed;
 
 static void ui_btn_on_click(Button *btn)
 {
     if (btn == NULL || btn->button_id >= UI_BTN_COUNT) {
         return;
     }
-    /* ENT / BACK 用单击确认，避免误触 */
-    if (btn->button_id == (uint8_t)UI_KEY_ENT || btn->button_id == (uint8_t)UI_KEY_BACK) {
+    /* ENT / BACK：单击确认，避免误触（等 SHORT 窗口，防双击毛刺） */
+    if (btn->button_id == (uint8_t)UI_KEY_ENT ||
+        btn->button_id == (uint8_t)UI_KEY_BACK) {
+        ui_key_push((ui_key_t)btn->button_id);
+    }
+}
+
+static void ui_btn_on_long_start(Button *btn)
+{
+    if (btn == NULL || btn->button_id >= UI_BTN_COUNT) {
+        return;
+    }
+    s_key_long_consumed |= (uint8_t)(1u << btn->button_id);
+
+    /* 长按开始：推 LONG（Set/Chart 切页；编辑态当步进） */
+    if (btn->button_id == (uint8_t)UI_KEY_UP) {
+        ui_key_push(UI_KEY_UP_LONG);
+    } else if (btn->button_id == (uint8_t)UI_KEY_DOWN) {
+        ui_key_push(UI_KEY_DOWN_LONG);
+    }
+}
+
+static void ui_btn_on_press_up(Button *btn)
+{
+    if (btn == NULL || btn->button_id >= UI_BTN_COUNT) {
+        return;
+    }
+
+    {
+        uint8_t bit = (uint8_t)(1u << btn->button_id);
+        if ((s_key_long_consumed & bit) != 0u) {
+            s_key_long_consumed = (uint8_t)(s_key_long_consumed & (uint8_t)~bit);
+            return; /* 已由长按处理 */
+        }
+    }
+
+    /* 短按松手即响应（不走 SINGLE_CLICK 的 300ms 等待） */
+    if (btn->button_id == (uint8_t)UI_KEY_UP ||
+        btn->button_id == (uint8_t)UI_KEY_DOWN) {
         ui_key_push((ui_key_t)btn->button_id);
     }
 }
@@ -365,20 +396,28 @@ static void ui_btn_on_hold(Button *btn)
     if (btn == NULL || btn->button_id >= UI_BTN_COUNT) {
         return;
     }
+    if (btn->button_id != (uint8_t)UI_KEY_UP &&
+        btn->button_id != (uint8_t)UI_KEY_DOWN) {
+        return;
+    }
+    /* 仅编辑数值时连发；Set/Chart 长按只切一次页，不连翻 */
+    if (!s_editing) {
+        return;
+    }
     /* 长按保持：每 ~50ms 再推一次（tick=5ms） */
     if (++hold_div[btn->button_id] < 10u) {
         return;
     }
     hold_div[btn->button_id] = 0u;
-
-    if (btn->button_id == (uint8_t)UI_KEY_UP || btn->button_id == (uint8_t)UI_KEY_DOWN) {
-        ui_key_push((ui_key_t)btn->button_id);
-    }
+    ui_key_push((ui_key_t)btn->button_id);
 }
 
 /**
  * 注册四键到 multi_button。
  * 扫描由中频 loader_state 任务调用 button_ticks()（5ms），此处不建定时器。
+ *
+ * UP/DOWN：松手短按 = 本页操作；长按开始 = 切页（Set/Chart）；编辑态长按连发步进。
+ * ENT/BACK：仅单击。
  */
 static void ui_buttons_init(void)
 {
@@ -386,11 +425,13 @@ static void ui_buttons_init(void)
 
     s_key_wr = 0;
     s_key_rd = 0;
+    s_key_long_consumed = 0;
 
     for (uint8_t i = 0; i < UI_BTN_COUNT; i++) {
         button_init(&s_btns[i], ui_read_button_level, BSP_KEY_ACTIVE_LEVEL, i);
-        button_attach(&s_btns[i], BTN_PRESS_DOWN, ui_btn_on_press);
+        button_attach(&s_btns[i], BTN_PRESS_UP, ui_btn_on_press_up);
         button_attach(&s_btns[i], BTN_SINGLE_CLICK, ui_btn_on_click);
+        button_attach(&s_btns[i], BTN_LONG_PRESS_START, ui_btn_on_long_start);
         button_attach(&s_btns[i], BTN_LONG_PRESS_HOLD, ui_btn_on_hold);
         (void)button_start(&s_btns[i]);
     }
@@ -601,7 +642,8 @@ static void ui_draw_set(const loader_runtime_t *rt)
     }
 
     ui_text(2, 100, 1, UI_COL_DIM, UI_COL_BG,
-            s_editing ? "Edit: UP/DN step  ENT:save" : "ENT:act  BACK:home");
+            s_editing ? "Edit: UP/DN step  ENT:save"
+                      : "ENT:act holdUP/DN:page");
     ui_draw_tab_bar(UI_PAGE_SET);
 }
 
@@ -674,7 +716,7 @@ static void ui_draw_chart_full(const loader_runtime_t *rt)
 
     ui_chart_draw(2, 14, 157, 108, ymin, ymax, color);
 
-    (void)snprintf(buf, sizeof(buf), "Y:0..%.0f%s ENT:hold UP/DN:I/P",
+    (void)snprintf(buf, sizeof(buf), "Y:0..%.0f%s hold:page click:I/P",
                    (double)ymax, ch);
     ui_text(2, 112, 1, UI_COL_DIM, UI_COL_BG, buf);
     (void)ch;
@@ -731,12 +773,16 @@ static void ui_page_delta(int delta)
 static void ui_handle_key(ui_key_t key)
 {
     loader_runtime_t rt = loader_runtime_get();
+    const bool is_up   = (key == UI_KEY_UP || key == UI_KEY_UP_LONG);
+    const bool is_down = (key == UI_KEY_DOWN || key == UI_KEY_DOWN_LONG);
+    const bool is_long = (key == UI_KEY_UP_LONG || key == UI_KEY_DOWN_LONG);
 
     switch (s_page) {
     case UI_PAGE_HOME:
-        if (key == UI_KEY_UP) {
+        /* 短按 / 长按均可翻页（长按不连发，避免连跳） */
+        if (key == UI_KEY_UP || key == UI_KEY_UP_LONG) {
             ui_page_delta(+1);
-        } else if (key == UI_KEY_DOWN) {
+        } else if (key == UI_KEY_DOWN || key == UI_KEY_DOWN_LONG) {
             ui_page_delta(-1);
         } else if (key == UI_KEY_ENT) {
             ui_toggle_output();
@@ -747,11 +793,12 @@ static void ui_handle_key(ui_key_t key)
     case UI_PAGE_SET:
         if (s_editing) {
             float step = s_steps[s_step_idx % 3u];
-            if (key == UI_KEY_UP) {
+            /* 编辑态：短按与长按都当步进（hold 连发短键） */
+            if (is_up) {
                 s_edit_value = ui_clampf(s_edit_value + step,
                                          ui_setpoint_min(rt.mode),
                                          ui_setpoint_max(rt.mode));
-            } else if (key == UI_KEY_DOWN) {
+            } else if (is_down) {
                 s_edit_value = ui_clampf(s_edit_value - step,
                                          ui_setpoint_min(rt.mode),
                                          ui_setpoint_max(rt.mode));
@@ -761,6 +808,16 @@ static void ui_handle_key(ui_key_t key)
             } else if (key == UI_KEY_BACK) {
                 s_edit_value = s_edit_backup;
                 s_editing = false;
+            }
+            break;
+        }
+
+        /* 非编辑：长按上下切页签 */
+        if (is_long) {
+            if (key == UI_KEY_UP_LONG) {
+                ui_page_delta(+1);
+            } else {
+                ui_page_delta(-1);
             }
             break;
         }
@@ -801,15 +858,22 @@ static void ui_handle_key(ui_key_t key)
             (void)loader_core_clear_fault();
         } else if (key == UI_KEY_BACK) {
             ui_page_set(UI_PAGE_HOME);
-        } else if (key == UI_KEY_UP) {
+        } else if (key == UI_KEY_UP || key == UI_KEY_UP_LONG) {
             ui_page_delta(+1);
-        } else if (key == UI_KEY_DOWN) {
+        } else if (key == UI_KEY_DOWN || key == UI_KEY_DOWN_LONG) {
             ui_page_delta(-1);
         }
         break;
 
     case UI_PAGE_CHART:
-        if (key == UI_KEY_UP || key == UI_KEY_DOWN) {
+        /* 长按上下切页；短按切 I/P */
+        if (is_long) {
+            if (key == UI_KEY_UP_LONG) {
+                ui_page_delta(+1);
+            } else {
+                ui_page_delta(-1);
+            }
+        } else if (key == UI_KEY_UP || key == UI_KEY_DOWN) {
             s_chart.show_power = !s_chart.show_power;
             /* 切换通道后清空，避免量纲混画 */
             ui_chart_init();
@@ -823,9 +887,9 @@ static void ui_handle_key(ui_key_t key)
     case UI_PAGE_ABOUT:
         if (key == UI_KEY_BACK || key == UI_KEY_ENT) {
             ui_page_set(UI_PAGE_HOME);
-        } else if (key == UI_KEY_UP) {
+        } else if (key == UI_KEY_UP || key == UI_KEY_UP_LONG) {
             ui_page_delta(+1);
-        } else if (key == UI_KEY_DOWN) {
+        } else if (key == UI_KEY_DOWN || key == UI_KEY_DOWN_LONG) {
             ui_page_delta(-1);
         }
         break;
