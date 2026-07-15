@@ -12,10 +12,10 @@ static ADC_DMA_BUF uint16_t adc_pga_buffer[ADC_PGA_BUFFER_LENGTH];
 
 exit_code_t bsp_adc_init(void)
 {
-    if (HAL_OPAMP_Start(&hopamp1) != HAL_OK) {
+    if (HAL_OPAMP_SelfCalibrate(&hopamp1) != HAL_OK) {
         return EXIT_HW_FAILURE;
     }
-    if (HAL_OPAMP_SelfCalibrate(&hopamp1) != HAL_OK) {
+    if (HAL_OPAMP_Start(&hopamp1) != HAL_OK) {
         return EXIT_HW_FAILURE;
     }
 
