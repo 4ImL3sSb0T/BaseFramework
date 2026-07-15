@@ -1,13 +1,31 @@
 #ifndef LOADER_CONFIG_H
 #define LOADER_CONFIG_H
 
-/* 周期、限值、默认 PID、任务参数 — 见 LOADER_DESIGN.md */
+/* 周期、限值、默认 PID、任务参数 — 见 LOADER_DESIGN.md
+ *
+ * 三层节奏（由 loader_task_start 拉起）：
+ *   高频 TIM ISR     LOADER_CONTROL_PERIOD_S  → control_update
+ *   中频 state 任务  LOADER_STATE_PERIOD_MS   → state_update + button_ticks
+ *   低频 UI 任务     LOADER_UI_POLL_MS        → loader_ui_poll
+ * 后两档周期定义在 loader_task.h，便于任务层统一改。
+ */
 
-/** 控制环周期 (s)，2 kHz */
+/** 控制环周期 (s)，与 TIM16 配置一致，约 2 kHz */
 #define LOADER_CONTROL_PERIOD_S             0.0005f
 
 /** 满量程电流 (A)，电流环输出与 CV 外环 I_target 共用 */
 #define LOADER_CURRENT_MAX                  5.0f
+
+/** 满量程电压 / 功率 / 电阻（设定钳位，实验板） */
+#define LOADER_VOLTAGE_MAX                  30.0f
+#define LOADER_POWER_MAX                    50.0f
+#define LOADER_RESISTANCE_MAX               1000.0f
+
+/** 上电默认设定 */
+#define LOADER_DEFAULT_CURRENT_SETPOINT     1.0f
+#define LOADER_DEFAULT_VOLTAGE_SETPOINT     5.0f
+#define LOADER_DEFAULT_POWER_SETPOINT       10.0f
+#define LOADER_DEFAULT_RESISTANCE_SETPOINT  10.0f
 
 /** 软件过流阈值 (A) */
 #define LOADER_OVERCURRENT_LIMIT            5.0f
@@ -19,6 +37,7 @@
 #define LOADER_VOLTAGE_EPSILON              0.05f
 #define LOADER_CURRENT_EPSILON              0.001f
 #define LOADER_RESISTANCE_EPSILON           0.01f
+
 
 /**
  * 软件电流内环开关

@@ -64,4 +64,11 @@ void loader_runtime_set_state(loader_state_t state);
 void loader_runtime_enter_fault(loader_error_t error);
 void loader_runtime_clear_fault(void);
 
+/** 仅写设定字段（UI/CLI 用，不覆盖测量） */
+void loader_runtime_set_mode(loader_mode_t mode);
+void loader_runtime_set_current_setpoint(float value);
+void loader_runtime_set_voltage_setpoint(float value);
+void loader_runtime_set_power_setpoint(float value);
+void loader_runtime_set_resistance_setpoint(float value);
+
 #endif /* LOADER_RUNTIME_H */

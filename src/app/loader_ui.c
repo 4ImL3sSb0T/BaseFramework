@@ -2,8 +2,8 @@
  * @file loader_ui.c
  * @brief 电子负载 TFT UI（深色仪表盘）— 见 LOADER_UI.md
  *
- * 当前阶段：不接 loader_runtime，使用本地随机/随机游走模拟数据。
- * 导航：演示自动切页；PC13 用户键短按也可下一页。
+ * 数据：loader_runtime（测量只读，设定走 runtime 写口 + core request）
+ * 输入：multi_button + bsp_gpio（PD15/14/13/12 = UP/DOWN/ENT/BACK）
  */
 
 #include "loader_task.h"
@@ -13,10 +13,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "main.h"
+#include "loader_runtime.h"
+#include "loader_core.h"
+#include "loader_config.h"
+#include "bsp/gpio/bsp_gpio.h"
+#include "multi_button.h"
 #include "mjc_hal.h"
 #include "mjc_hal_gfx.h"
 #include "service/sys/sys_log.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 /* -------------------------------------------------------------------------- */
 /* 颜色 / 布局（160×128）                                                       */
@@ -31,33 +37,26 @@
 #define UI_COL_RED       0xF800u
 #define UI_COL_SELECT    0x0210u
 #define UI_COL_GRID      0x4208u
-#define UI_COL_PANEL     0x10A2u
 
 #define UI_W             160
 #define UI_H             128
 
 #define UI_TOP_H         12
-#define UI_READ_Y0       12
 #define UI_CHART_Y0      56
 #define UI_CHART_Y1      108
 #define UI_CHART_X0      4
 #define UI_CHART_X1      155
 #define UI_BOT_Y0        113
 
-#define UI_CHART_W       ((UI_CHART_X1) - (UI_CHART_X0) + 1)
-#define UI_CHART_H       ((UI_CHART_Y1) - (UI_CHART_Y0) + 1)
-
 #define UI_CHART_POINTS  96
-#define UI_I_MAX         5.0f
-#define UI_P_MAX         50.0f
+#define UI_I_MAX         LOADER_CURRENT_MAX
+#define UI_P_MAX         LOADER_POWER_MAX
 
-/** 演示：无四键时自动轮播页面（ms，0=关闭） */
-#ifndef UI_DEMO_AUTO_PAGE_MS
-#define UI_DEMO_AUTO_PAGE_MS  6000u
-#endif
+#define UI_KEY_Q_SIZE    16u
+#define UI_BTN_COUNT     4u
 
 /* -------------------------------------------------------------------------- */
-/* 页面 / 模拟状态                                                              */
+/* 页面 / 导航                                                                  */
 /* -------------------------------------------------------------------------- */
 
 typedef enum {
@@ -70,34 +69,11 @@ typedef enum {
 } ui_page_t;
 
 typedef enum {
-    UI_MODE_CC = 0,
-    UI_MODE_CV,
-    UI_MODE_CP,
-    UI_MODE_CR
-} ui_mode_t;
-
-typedef enum {
-    UI_STATE_IDLE = 0,
-    UI_STATE_RUNNING,
-    UI_STATE_ERROR
-} ui_state_t;
-
-typedef struct {
-    ui_mode_t  mode;
-    ui_state_t state;
-    bool       output_on;
-    float      voltage;
-    float      current;
-    float      power;
-    float      temperature;
-    float      current_set;
-    float      voltage_set;
-    float      power_set;
-    float      resistance_set;
-    float      peak_i;
-    float      peak_p;
-    const char *fault_text;
-} ui_mock_t;
+    UI_KEY_UP = 0,
+    UI_KEY_DOWN,
+    UI_KEY_ENT,
+    UI_KEY_BACK
+} ui_key_t;
 
 typedef struct {
     float    samples[UI_CHART_POINTS];
@@ -108,32 +84,29 @@ typedef struct {
 } ui_chart_t;
 
 static ui_page_t  s_page = UI_PAGE_HOME;
-static ui_mock_t  s_mock;
 static ui_chart_t s_chart;
-static uint32_t   s_tick_ms;
-static uint32_t   s_rng = 0xA5A5u;
 static uint8_t    s_set_sel;
 static uint8_t    s_step_idx;
+static bool       s_editing;
+static float      s_edit_value;
+static float      s_edit_backup;
+static float      s_peak_i;
+static float      s_peak_p;
 static bool       s_inited;
 static ui_page_t  s_last_drawn = (ui_page_t)0xFF;
 
 static const float s_steps[] = { 0.01f, 0.1f, 1.0f };
 
+/* 按键事件队列：timer 任务写，UI 任务读 */
+static volatile uint8_t s_key_q[UI_KEY_Q_SIZE];
+static volatile uint8_t s_key_wr;
+static volatile uint8_t s_key_rd;
+
+static Button s_btns[UI_BTN_COUNT];
+
 /* -------------------------------------------------------------------------- */
 /* 工具                                                                        */
 /* -------------------------------------------------------------------------- */
-
-static uint32_t ui_rand_u32(void)
-{
-    s_rng = s_rng * 1664525u + 1013904223u;
-    return s_rng;
-}
-
-static float ui_randf(float lo, float hi)
-{
-    float t = (float)(ui_rand_u32() & 0xFFFFu) / 65535.0f;
-    return lo + (hi - lo) * t;
-}
 
 static float ui_clampf(float v, float lo, float hi)
 {
@@ -158,7 +131,6 @@ static int16_t ui_map_y(float v, float vmin, float vmax, int16_t y_top, int16_t 
     if (t > 1.0f) {
         t = 1.0f;
     }
-    /* 值大 → 更靠上 */
     return (int16_t)(y_bot - (int16_t)(t * (float)(y_bot - y_top)));
 }
 
@@ -216,118 +188,211 @@ static void ui_text(uint16_t x, uint16_t y, uint8_t size, uint16_t pen, uint16_t
     }
 }
 
-static const char *ui_mode_str(ui_mode_t m)
+static const char *ui_mode_str(loader_mode_t m)
 {
     switch (m) {
-    case UI_MODE_CC: return "CC";
-    case UI_MODE_CV: return "CV";
-    case UI_MODE_CP: return "CP";
-    case UI_MODE_CR: return "CR";
-    default:         return "??";
+    case LOADER_MODE_CC: return "CC";
+    case LOADER_MODE_CV: return "CV";
+    case LOADER_MODE_CP: return "CP";
+    case LOADER_MODE_CR: return "CR";
+    default:             return "??";
     }
 }
 
-static const char *ui_state_str(ui_state_t s)
+static const char *ui_state_str(loader_state_t s)
 {
     switch (s) {
-    case UI_STATE_IDLE:    return "IDLE";
-    case UI_STATE_RUNNING: return "RUN";
-    case UI_STATE_ERROR:   return "FAULT";
-    default:               return "??";
+    case LOADER_STATE_IDLE:    return "IDLE";
+    case LOADER_STATE_RUNNING: return "RUN";
+    case LOADER_STATE_PAUSED:  return "PAUSE";
+    case LOADER_STATE_ERROR:   return "FAULT";
+    default:                   return "??";
     }
 }
 
-static float ui_active_setpoint(const ui_mock_t *m)
+static const char *ui_fault_str(loader_error_t e)
 {
-    switch (m->mode) {
-    case UI_MODE_CC: return m->current_set;
-    case UI_MODE_CV: return m->voltage_set;
-    case UI_MODE_CP: return m->power_set;
-    case UI_MODE_CR: return m->resistance_set;
-    default:         return 0.0f;
+    switch (e) {
+    case LOADER_ERROR_NONE:            return "NONE";
+    case LOADER_ERROR_OVERCURRENT:     return "OCP";
+    case LOADER_ERROR_OVERTEMPERATURE: return "OTP";
+    case LOADER_ERROR_UNDERVOLTAGE:    return "UVP";
+    default:                           return "ERR";
     }
 }
 
-static const char *ui_set_unit(ui_mode_t m)
+static float ui_active_setpoint(const loader_runtime_t *rt)
+{
+    switch (rt->mode) {
+    case LOADER_MODE_CC: return rt->current_setpoint;
+    case LOADER_MODE_CV: return rt->voltage_setpoint;
+    case LOADER_MODE_CP: return rt->power_setpoint;
+    case LOADER_MODE_CR: return rt->resistance_setpoint;
+    default:             return 0.0f;
+    }
+}
+
+static const char *ui_set_unit(loader_mode_t m)
 {
     switch (m) {
-    case UI_MODE_CC: return "A";
-    case UI_MODE_CV: return "V";
-    case UI_MODE_CP: return "W";
-    case UI_MODE_CR: return "R";
-    default:         return "";
+    case LOADER_MODE_CC: return "A";
+    case LOADER_MODE_CV: return "V";
+    case LOADER_MODE_CP: return "W";
+    case LOADER_MODE_CR: return "R";
+    default:             return "";
+    }
+}
+
+static float ui_setpoint_max(loader_mode_t m)
+{
+    switch (m) {
+    case LOADER_MODE_CC: return LOADER_CURRENT_MAX;
+    case LOADER_MODE_CV: return LOADER_VOLTAGE_MAX;
+    case LOADER_MODE_CP: return LOADER_POWER_MAX;
+    case LOADER_MODE_CR: return LOADER_RESISTANCE_MAX;
+    default:             return LOADER_CURRENT_MAX;
+    }
+}
+
+static float ui_setpoint_min(loader_mode_t m)
+{
+    if (m == LOADER_MODE_CR) {
+        return LOADER_RESISTANCE_EPSILON;
+    }
+    return 0.0f;
+}
+
+static void ui_write_active_setpoint(loader_mode_t mode, float value)
+{
+    value = ui_clampf(value, ui_setpoint_min(mode), ui_setpoint_max(mode));
+    switch (mode) {
+    case LOADER_MODE_CC:
+        loader_runtime_set_current_setpoint(value);
+        break;
+    case LOADER_MODE_CV:
+        loader_runtime_set_voltage_setpoint(value);
+        break;
+    case LOADER_MODE_CP:
+        loader_runtime_set_power_setpoint(value);
+        break;
+    case LOADER_MODE_CR:
+        loader_runtime_set_resistance_setpoint(value);
+        break;
+    default:
+        break;
+    }
+}
+
+static void ui_cycle_mode(void)
+{
+    loader_runtime_t rt = loader_runtime_get();
+    loader_mode_t next = (loader_mode_t)(((unsigned)rt.mode + 1u) % 4u);
+    loader_runtime_set_mode(next);
+}
+
+static void ui_toggle_output(void)
+{
+    loader_runtime_t rt = loader_runtime_get();
+    if (rt.state == LOADER_STATE_RUNNING) {
+        (void)loader_core_request_stop();
+    } else if (rt.state == LOADER_STATE_ERROR) {
+        /* 故障态 ON 会失败；保持 FAULT 显示 */
+        (void)loader_core_request_run();
+    } else {
+        (void)loader_core_request_run();
     }
 }
 
 /* -------------------------------------------------------------------------- */
-/* 模拟数据                                                                    */
+/* 按键队列 / multi_button                                                      */
 /* -------------------------------------------------------------------------- */
 
-static void ui_mock_init(void)
+static void ui_key_push(ui_key_t key)
 {
-    memset(&s_mock, 0, sizeof(s_mock));
-    s_mock.mode        = UI_MODE_CC;
-    s_mock.state       = UI_STATE_RUNNING;
-    s_mock.output_on   = true;
-    s_mock.voltage     = 12.0f;
-    s_mock.current     = 1.0f;
-    s_mock.power       = 12.0f;
-    s_mock.temperature = 28.0f;
-    s_mock.current_set = 1.5f;
-    s_mock.voltage_set = 5.0f;
-    s_mock.power_set   = 10.0f;
-    s_mock.resistance_set = 8.0f;
-    s_mock.fault_text  = "NONE";
+    taskENTER_CRITICAL();
+    uint8_t next = (uint8_t)((s_key_wr + 1u) % UI_KEY_Q_SIZE);
+    if (next != s_key_rd) {
+        s_key_q[s_key_wr] = (uint8_t)key;
+        s_key_wr = next;
+    }
+    taskEXIT_CRITICAL();
 }
 
-static void ui_mock_step(void)
+static bool ui_key_pop(ui_key_t *key)
 {
-    /* 电压：慢随机游走 3~20 V */
-    s_mock.voltage += ui_randf(-0.04f, 0.04f);
-    s_mock.voltage  = ui_clampf(s_mock.voltage, 3.0f, 20.0f);
-
-    /* 电流：更快波动，便于折线好看；输出关则衰减到 0 */
-    if (s_mock.output_on && s_mock.state == UI_STATE_RUNNING) {
-        float target = s_mock.current_set;
-        /* 向设定靠近 + 噪声 */
-        s_mock.current += (target - s_mock.current) * 0.08f;
-        s_mock.current += ui_randf(-0.12f, 0.12f);
-        /* 偶发尖峰 */
-        if ((ui_rand_u32() & 0x3Fu) == 0u) {
-            s_mock.current += ui_randf(0.2f, 0.6f);
-        }
-        s_mock.current = ui_clampf(s_mock.current, 0.0f, UI_I_MAX);
-    } else {
-        s_mock.current *= 0.85f;
-        if (s_mock.current < 0.001f) {
-            s_mock.current = 0.0f;
-        }
+    bool ok = false;
+    taskENTER_CRITICAL();
+    if (s_key_rd != s_key_wr) {
+        *key = (ui_key_t)s_key_q[s_key_rd];
+        s_key_rd = (uint8_t)((s_key_rd + 1u) % UI_KEY_Q_SIZE);
+        ok = true;
     }
+    taskEXIT_CRITICAL();
+    return ok;
+}
 
-    s_mock.power = s_mock.voltage * s_mock.current;
+static uint8_t ui_read_button_level(uint8_t id)
+{
+    return bsp_gpio_key_level(id);
+}
 
-    s_mock.temperature += ui_randf(-0.05f, 0.08f);
-    s_mock.temperature  = ui_clampf(s_mock.temperature, 22.0f, 55.0f);
-
-    if (s_mock.current > s_mock.peak_i) {
-        s_mock.peak_i = s_mock.current;
-    } else {
-        s_mock.peak_i *= 0.999f;
+static void ui_btn_on_press(Button *btn)
+{
+    if (btn == NULL || btn->button_id >= UI_BTN_COUNT) {
+        return;
     }
-    if (s_mock.power > s_mock.peak_p) {
-        s_mock.peak_p = s_mock.power;
-    } else {
-        s_mock.peak_p *= 0.999f;
+    /* 上/下：按下即响应，手感更跟手 */
+    if (btn->button_id == (uint8_t)UI_KEY_UP || btn->button_id == (uint8_t)UI_KEY_DOWN) {
+        ui_key_push((ui_key_t)btn->button_id);
     }
+}
 
-    /* 极低概率模拟故障闪一下再恢复（纯演示） */
-    if (s_mock.state != UI_STATE_ERROR && (ui_rand_u32() & 0x7FFu) == 0u) {
-        s_mock.state = UI_STATE_ERROR;
-        s_mock.output_on = false;
-        s_mock.fault_text = "OCP";
-    } else if (s_mock.state == UI_STATE_ERROR && (ui_rand_u32() & 0x7Fu) == 0u) {
-        s_mock.state = UI_STATE_IDLE;
-        s_mock.fault_text = "NONE";
+static void ui_btn_on_click(Button *btn)
+{
+    if (btn == NULL || btn->button_id >= UI_BTN_COUNT) {
+        return;
+    }
+    /* ENT / BACK 用单击确认，避免误触 */
+    if (btn->button_id == (uint8_t)UI_KEY_ENT || btn->button_id == (uint8_t)UI_KEY_BACK) {
+        ui_key_push((ui_key_t)btn->button_id);
+    }
+}
+
+static void ui_btn_on_hold(Button *btn)
+{
+    static uint8_t hold_div[UI_BTN_COUNT];
+
+    if (btn == NULL || btn->button_id >= UI_BTN_COUNT) {
+        return;
+    }
+    /* 长按保持：每 ~50ms 再推一次（tick=5ms） */
+    if (++hold_div[btn->button_id] < 10u) {
+        return;
+    }
+    hold_div[btn->button_id] = 0u;
+
+    if (btn->button_id == (uint8_t)UI_KEY_UP || btn->button_id == (uint8_t)UI_KEY_DOWN) {
+        ui_key_push((ui_key_t)btn->button_id);
+    }
+}
+
+/**
+ * 注册四键到 multi_button。
+ * 扫描由中频 loader_state 任务调用 button_ticks()（5ms），此处不建定时器。
+ */
+static void ui_buttons_init(void)
+{
+    (void)bsp_gpio_init();
+
+    s_key_wr = 0;
+    s_key_rd = 0;
+
+    for (uint8_t i = 0; i < UI_BTN_COUNT; i++) {
+        button_init(&s_btns[i], ui_read_button_level, BSP_KEY_ACTIVE_LEVEL, i);
+        button_attach(&s_btns[i], BTN_PRESS_DOWN, ui_btn_on_press);
+        button_attach(&s_btns[i], BTN_SINGLE_CLICK, ui_btn_on_click);
+        button_attach(&s_btns[i], BTN_LONG_PRESS_HOLD, ui_btn_on_hold);
+        (void)button_start(&s_btns[i]);
     }
 }
 
@@ -361,7 +426,6 @@ static void ui_chart_draw(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
     ui_fill_rect(x0, y0, w, h, UI_COL_BG);
     ui_draw_rect(x0, y0, w, h, UI_COL_DIM);
 
-    /* 网格：2 横 + 3 竖 */
     for (uint8_t i = 1; i <= 2; i++) {
         uint16_t gy = (uint16_t)(y0 + (h * i) / 3u);
         ui_draw_line(x0 + 1u, gy, x1 - 1u, gy, UI_COL_GRID);
@@ -376,10 +440,7 @@ static void ui_chart_draw(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
         return;
     }
 
-    uint16_t start = s_chart.filled
-                         ? s_chart.head
-                         : 0u;
-
+    uint16_t start = s_chart.filled ? s_chart.head : 0u;
     int16_t prev_x = (int16_t)(x0 + 1);
     int16_t prev_y = ui_map_y(s_chart.samples[start % UI_CHART_POINTS],
                               ymin, ymax, (int16_t)(y0 + 1), (int16_t)(y1 - 1));
@@ -414,25 +475,26 @@ static void ui_draw_tab_bar(ui_page_t active)
     }
 }
 
-static void ui_draw_top_bar_home(void)
+static void ui_draw_top_bar_home(const loader_runtime_t *rt)
 {
     char buf[40];
+    bool on = (rt->state == LOADER_STATE_RUNNING);
 
-    if (s_mock.state == UI_STATE_ERROR) {
+    if (rt->state == LOADER_STATE_ERROR) {
         ui_fill_rect(0, 0, UI_W, UI_TOP_H, UI_COL_RED);
-        (void)snprintf(buf, sizeof(buf), "FAULT:%s", s_mock.fault_text);
+        (void)snprintf(buf, sizeof(buf), "FAULT:%s", ui_fault_str(rt->error));
         ui_text(4, 2, 1, UI_COL_WHITE, UI_COL_RED, buf);
         return;
     }
 
     ui_fill_rect(0, 0, UI_W, UI_TOP_H, UI_COL_BG);
-    (void)snprintf(buf, sizeof(buf), "%s %s", ui_mode_str(s_mock.mode), ui_state_str(s_mock.state));
+    (void)snprintf(buf, sizeof(buf), "%s %s", ui_mode_str(rt->mode), ui_state_str(rt->state));
     ui_text(2, 2, 1, UI_COL_CYAN, UI_COL_BG, buf);
 
-    (void)snprintf(buf, sizeof(buf), "%4.1fC", (double)s_mock.temperature);
+    (void)snprintf(buf, sizeof(buf), "%4.1fC", (double)rt->temperature_measurement);
     ui_text(78, 2, 1, UI_COL_DIM, UI_COL_BG, buf);
 
-    if (s_mock.output_on) {
+    if (on) {
         ui_fill_rect(128, 1, 28, 10, UI_COL_GREEN);
         ui_text(132, 2, 1, UI_COL_BG, UI_COL_GREEN, "ON");
     } else {
@@ -454,32 +516,29 @@ static void ui_draw_page_header(const char *title, ui_page_t page)
 /* 各页绘制                                                                    */
 /* -------------------------------------------------------------------------- */
 
-static void ui_draw_home(void)
+static void ui_draw_home(const loader_runtime_t *rt)
 {
     char buf[32];
+    float set_v = s_editing ? s_edit_value : ui_active_setpoint(rt);
 
     ui_fill(UI_COL_BG);
-    ui_draw_top_bar_home();
+    ui_draw_top_bar_home(rt);
 
-    /* 电压大字 */
-    (void)snprintf(buf, sizeof(buf), "%6.3f", (double)s_mock.voltage);
+    (void)snprintf(buf, sizeof(buf), "%6.3f", (double)rt->voltage_measurement);
     ui_text(4, 14, 3, UI_COL_CYAN, UI_COL_BG, buf);
     ui_text(118, 22, 2, UI_COL_DIM, UI_COL_BG, "V");
 
-    /* 电流 / 功率 */
-    (void)snprintf(buf, sizeof(buf), "%5.3fA", (double)s_mock.current);
+    (void)snprintf(buf, sizeof(buf), "%5.3fA", (double)rt->current_measurement);
     ui_text(4, 40, 2, UI_COL_AMBER, UI_COL_BG, buf);
 
-    (void)snprintf(buf, sizeof(buf), "%5.2fW", (double)s_mock.power);
+    (void)snprintf(buf, sizeof(buf), "%5.2fW", (double)rt->power_measurement);
     ui_text(90, 40, 2, UI_COL_WHITE, UI_COL_BG, buf);
 
-    /* 折线 */
     ui_chart_draw(UI_CHART_X0, UI_CHART_Y0, UI_CHART_X1, UI_CHART_Y1,
                   0.0f, UI_I_MAX, UI_COL_AMBER);
 
-    /* 设定：画在折线图内左上角（chart 之后绘制，叠在网格上） */
     (void)snprintf(buf, sizeof(buf), "Set %5.3f%s",
-                   (double)ui_active_setpoint(&s_mock), ui_set_unit(s_mock.mode));
+                   (double)set_v, ui_set_unit(rt->mode));
     ui_text((uint16_t)(UI_CHART_X0 + 2u), (uint16_t)(UI_CHART_Y0 + 2u),
             1, UI_COL_DIM, UI_COL_BG, buf);
 
@@ -490,13 +549,15 @@ static void ui_draw_home(void)
     ui_draw_tab_bar(UI_PAGE_HOME);
 }
 
-static void ui_draw_set(void)
+static void ui_draw_set(const loader_runtime_t *rt)
 {
     char buf[40];
     static const char *const items[] = {
         "Mode", "Setpoint", "Output", "Step", "Back home"
     };
     const uint8_t n = 5;
+    bool on = (rt->state == LOADER_STATE_RUNNING);
+    float set_v = s_editing ? s_edit_value : ui_active_setpoint(rt);
 
     ui_fill(UI_COL_BG);
     ui_draw_page_header("SET", UI_PAGE_SET);
@@ -510,20 +571,23 @@ static void ui_draw_set(void)
         if (sel) {
             ui_fill_rect(0, y, UI_W, 13, bg);
         }
+        if (sel && s_editing && i == 1u) {
+            pen = UI_COL_AMBER;
+        }
 
         switch (i) {
         case 0:
             (void)snprintf(buf, sizeof(buf), "%c %-8s [%s]", sel ? '>' : ' ',
-                           items[i], ui_mode_str(s_mock.mode));
+                           items[i], ui_mode_str(rt->mode));
             break;
         case 1:
-            (void)snprintf(buf, sizeof(buf), "%c %-8s %6.3f%s", sel ? '>' : ' ',
-                           items[i], (double)ui_active_setpoint(&s_mock),
-                           ui_set_unit(s_mock.mode));
+            (void)snprintf(buf, sizeof(buf), "%c %-8s %6.3f%s%s", sel ? '>' : ' ',
+                           items[i], (double)set_v, ui_set_unit(rt->mode),
+                           (s_editing && sel) ? "*" : "");
             break;
         case 2:
             (void)snprintf(buf, sizeof(buf), "%c %-8s %s", sel ? '>' : ' ',
-                           items[i], s_mock.output_on ? "ON" : "OFF");
+                           items[i], on ? "ON" : "OFF");
             break;
         case 3:
             (void)snprintf(buf, sizeof(buf), "%c %-8s %.2f", sel ? '>' : ' ',
@@ -536,45 +600,52 @@ static void ui_draw_set(void)
         ui_text(2, (uint16_t)(y + 2u), 1, pen, bg, buf);
     }
 
-    ui_text(2, 100, 1, UI_COL_DIM, UI_COL_BG, "SIM data  KEY:next page");
+    ui_text(2, 100, 1, UI_COL_DIM, UI_COL_BG,
+            s_editing ? "Edit: UP/DN step  ENT:save" : "ENT:act  BACK:home");
     ui_draw_tab_bar(UI_PAGE_SET);
 }
 
-static void ui_draw_status(void)
+static void ui_draw_status(const loader_runtime_t *rt)
 {
     char buf[40];
 
     ui_fill(UI_COL_BG);
     ui_draw_page_header("STATUS", UI_PAGE_STATUS);
 
-    (void)snprintf(buf, sizeof(buf), "State  %s", ui_state_str(s_mock.state));
+    (void)snprintf(buf, sizeof(buf), "State  %s", ui_state_str(rt->state));
     ui_text(4, 16, 1, UI_COL_WHITE, UI_COL_BG, buf);
 
-    (void)snprintf(buf, sizeof(buf), "Fault  %s", s_mock.fault_text);
+    (void)snprintf(buf, sizeof(buf), "Fault  %s", ui_fault_str(rt->error));
     ui_text(4, 28, 1,
-            (s_mock.state == UI_STATE_ERROR) ? UI_COL_RED : UI_COL_DIM,
+            (rt->state == LOADER_STATE_ERROR) ? UI_COL_RED : UI_COL_DIM,
             UI_COL_BG, buf);
 
     (void)snprintf(buf, sizeof(buf), "V  %7.3f   I %6.3f",
-                   (double)s_mock.voltage, (double)s_mock.current);
+                   (double)rt->voltage_measurement, (double)rt->current_measurement);
     ui_text(4, 42, 1, UI_COL_CYAN, UI_COL_BG, buf);
 
     (void)snprintf(buf, sizeof(buf), "P  %7.2f   T %5.1fC",
-                   (double)s_mock.power, (double)s_mock.temperature);
+                   (double)rt->power_measurement, (double)rt->temperature_measurement);
     ui_text(4, 54, 1, UI_COL_AMBER, UI_COL_BG, buf);
 
-    (void)snprintf(buf, sizeof(buf), "OCP  %.1fA   OTP 50C", (double)UI_I_MAX);
+    (void)snprintf(buf, sizeof(buf), "OCP %.1fA  OTP %.0fC",
+                   (double)LOADER_OVERCURRENT_LIMIT,
+                   (double)LOADER_OVERTEMPERATURE_LIMIT);
     ui_text(4, 70, 1, UI_COL_DIM, UI_COL_BG, buf);
 
     (void)snprintf(buf, sizeof(buf), "PeakI %.2f  PeakP %.1f",
-                   (double)s_mock.peak_i, (double)s_mock.peak_p);
+                   (double)s_peak_i, (double)s_peak_p);
     ui_text(4, 82, 1, UI_COL_DIM, UI_COL_BG, buf);
 
-    ui_text(4, 98, 1, UI_COL_DIM, UI_COL_BG, "Mock protect display");
+    if (rt->state == LOADER_STATE_ERROR) {
+        ui_text(4, 98, 1, UI_COL_RED, UI_COL_BG, "ENT: clear fault");
+    } else {
+        ui_text(4, 98, 1, UI_COL_DIM, UI_COL_BG, "BACK: home");
+    }
     ui_draw_tab_bar(UI_PAGE_STATUS);
 }
 
-static void ui_draw_chart_full(void)
+static void ui_draw_chart_full(const loader_runtime_t *rt)
 {
     char buf[48];
     float ymin = 0.0f;
@@ -590,20 +661,20 @@ static void ui_draw_chart_full(void)
         ch = "P";
         (void)snprintf(buf, sizeof(buf), "P 5s %s  %.2fW pk%.1f",
                        s_chart.paused ? "HOLD" : "RUN",
-                       (double)s_mock.power, (double)s_mock.peak_p);
+                       (double)rt->power_measurement, (double)s_peak_p);
     } else {
         ymax = UI_I_MAX;
         color = UI_COL_AMBER;
         ch = "I";
         (void)snprintf(buf, sizeof(buf), "I 5s %s  %.3fA pk%.2f",
                        s_chart.paused ? "HOLD" : "RUN",
-                       (double)s_mock.current, (double)s_mock.peak_i);
+                       (double)rt->current_measurement, (double)s_peak_i);
     }
     ui_text(2, 2, 1, UI_COL_CYAN, UI_COL_BG, buf);
 
     ui_chart_draw(2, 14, 157, 108, ymin, ymax, color);
 
-    (void)snprintf(buf, sizeof(buf), "Y:0..%.0f%s  auto-page / KEY",
+    (void)snprintf(buf, sizeof(buf), "Y:0..%.0f%s ENT:hold UP/DN:I/P",
                    (double)ymax, ch);
     ui_text(2, 112, 1, UI_COL_DIM, UI_COL_BG, buf);
     (void)ch;
@@ -617,81 +688,153 @@ static void ui_draw_about(void)
     ui_text(4, 18, 1, UI_COL_WHITE, UI_COL_BG, "Electronic Load");
     ui_text(4, 30, 1, UI_COL_CYAN, UI_COL_BG, "BaseFramework H750");
     ui_text(4, 44, 1, UI_COL_DIM, UI_COL_BG, "Range  5.0A / ~50W");
-    ui_text(4, 56, 1, UI_COL_DIM, UI_COL_BG, "UI     v0.1 dark-dash");
-    ui_text(4, 68, 1, UI_COL_DIM, UI_COL_BG, "Data   SIMULATED");
+    ui_text(4, 56, 1, UI_COL_DIM, UI_COL_BG, "UI     v0.2 runtime");
+    ui_text(4, 68, 1, UI_COL_DIM, UI_COL_BG, "Keys   PD15/14/13/12");
     ui_text(4, 80, 1, UI_COL_DIM, UI_COL_BG, "TFT    ST7735 160x128");
-    ui_text(4, 98, 1, UI_COL_AMBER, UI_COL_BG, "Runtime not linked");
+    ui_text(4, 98, 1, UI_COL_GREEN, UI_COL_BG, "Runtime linked");
     ui_draw_tab_bar(UI_PAGE_ABOUT);
 }
 
-static void ui_draw_page(void)
+static void ui_draw_page(const loader_runtime_t *rt)
 {
     switch (s_page) {
-    case UI_PAGE_HOME:   ui_draw_home();       break;
-    case UI_PAGE_SET:    ui_draw_set();        break;
-    case UI_PAGE_STATUS: ui_draw_status();     break;
-    case UI_PAGE_CHART:  ui_draw_chart_full(); break;
-    case UI_PAGE_ABOUT:  ui_draw_about();      break;
-    default:             ui_draw_home();       break;
+    case UI_PAGE_HOME:   ui_draw_home(rt);       break;
+    case UI_PAGE_SET:    ui_draw_set(rt);        break;
+    case UI_PAGE_STATUS: ui_draw_status(rt);     break;
+    case UI_PAGE_CHART:  ui_draw_chart_full(rt); break;
+    case UI_PAGE_ABOUT:  ui_draw_about();        break;
+    default:             ui_draw_home(rt);       break;
     }
     s_last_drawn = s_page;
 }
 
 /* -------------------------------------------------------------------------- */
-/* 输入：PC13 下一页；演示自动轮播                                               */
+/* 输入处理（LOADER_UI.md §3）                                                  */
 /* -------------------------------------------------------------------------- */
 
-static void ui_page_next(void)
+static void ui_page_set(ui_page_t page)
 {
-    s_page = (ui_page_t)(((unsigned)s_page + 1u) % (unsigned)UI_PAGE_COUNT);
-    /* 设定页演示：顺带移动选中项 */
-    if (s_page == UI_PAGE_SET) {
-        s_set_sel = (uint8_t)((s_set_sel + 1u) % 5u);
-    }
-    if (s_page == UI_PAGE_CHART) {
-        s_chart.show_power = !s_chart.show_power;
-    }
+    s_page = page;
+    s_editing = false;
 }
 
-static void ui_poll_user_key(void)
+static void ui_page_delta(int delta)
 {
-    /* 板载用户键 PC13：按下=低（多数板）边沿，带简单消抖 */
-    static uint8_t stable = 1u;
-    static uint8_t last_raw = 1u;
-    static uint8_t debounce = 0u;
-
-    uint8_t raw = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_SET) ? 1u : 0u;
-
-    if (raw != last_raw) {
-        last_raw = raw;
-        debounce = 3u; /* ~3 poll */
-        return;
+    int p = (int)s_page + delta;
+    while (p < 0) {
+        p += (int)UI_PAGE_COUNT;
     }
-    if (debounce > 0u) {
-        debounce--;
-        return;
-    }
-    if (raw != stable) {
-        /* 下降沿：按下 */
-        if (stable == 1u && raw == 0u) {
-            ui_page_next();
+    s_page = (ui_page_t)(p % (int)UI_PAGE_COUNT);
+    s_editing = false;
+}
+
+static void ui_handle_key(ui_key_t key)
+{
+    loader_runtime_t rt = loader_runtime_get();
+
+    switch (s_page) {
+    case UI_PAGE_HOME:
+        if (key == UI_KEY_UP) {
+            ui_page_delta(+1);
+        } else if (key == UI_KEY_DOWN) {
+            ui_page_delta(-1);
+        } else if (key == UI_KEY_ENT) {
+            ui_toggle_output();
         }
-        stable = raw;
-    }
-}
+        /* BACK 无效（根页） */
+        break;
 
-static void ui_poll_demo_auto_page(void)
-{
-#if UI_DEMO_AUTO_PAGE_MS > 0
-    static uint32_t last_switch;
+    case UI_PAGE_SET:
+        if (s_editing) {
+            float step = s_steps[s_step_idx % 3u];
+            if (key == UI_KEY_UP) {
+                s_edit_value = ui_clampf(s_edit_value + step,
+                                         ui_setpoint_min(rt.mode),
+                                         ui_setpoint_max(rt.mode));
+            } else if (key == UI_KEY_DOWN) {
+                s_edit_value = ui_clampf(s_edit_value - step,
+                                         ui_setpoint_min(rt.mode),
+                                         ui_setpoint_max(rt.mode));
+            } else if (key == UI_KEY_ENT) {
+                ui_write_active_setpoint(rt.mode, s_edit_value);
+                s_editing = false;
+            } else if (key == UI_KEY_BACK) {
+                s_edit_value = s_edit_backup;
+                s_editing = false;
+            }
+            break;
+        }
 
-    if ((s_tick_ms - last_switch) >= UI_DEMO_AUTO_PAGE_MS) {
-        last_switch = s_tick_ms;
-        ui_page_next();
+        if (key == UI_KEY_UP) {
+            s_set_sel = (uint8_t)((s_set_sel + 4u) % 5u); /* 上一项 */
+        } else if (key == UI_KEY_DOWN) {
+            s_set_sel = (uint8_t)((s_set_sel + 1u) % 5u);
+        } else if (key == UI_KEY_ENT) {
+            switch (s_set_sel) {
+            case 0:
+                ui_cycle_mode();
+                break;
+            case 1:
+                s_edit_backup = ui_active_setpoint(&rt);
+                s_edit_value = s_edit_backup;
+                s_editing = true;
+                break;
+            case 2:
+                ui_toggle_output();
+                break;
+            case 3:
+                s_step_idx = (uint8_t)((s_step_idx + 1u) % 3u);
+                break;
+            case 4:
+                ui_page_set(UI_PAGE_HOME);
+                break;
+            default:
+                break;
+            }
+        } else if (key == UI_KEY_BACK) {
+            ui_page_set(UI_PAGE_HOME);
+        }
+        break;
+
+    case UI_PAGE_STATUS:
+        if (key == UI_KEY_ENT && rt.state == LOADER_STATE_ERROR) {
+            (void)loader_core_clear_fault();
+        } else if (key == UI_KEY_BACK) {
+            ui_page_set(UI_PAGE_HOME);
+        } else if (key == UI_KEY_UP) {
+            ui_page_delta(+1);
+        } else if (key == UI_KEY_DOWN) {
+            ui_page_delta(-1);
+        }
+        break;
+
+    case UI_PAGE_CHART:
+        if (key == UI_KEY_UP || key == UI_KEY_DOWN) {
+            s_chart.show_power = !s_chart.show_power;
+            /* 切换通道后清空，避免量纲混画 */
+            ui_chart_init();
+        } else if (key == UI_KEY_ENT) {
+            s_chart.paused = !s_chart.paused;
+        } else if (key == UI_KEY_BACK) {
+            ui_page_set(UI_PAGE_HOME);
+        }
+        break;
+
+    case UI_PAGE_ABOUT:
+        if (key == UI_KEY_BACK || key == UI_KEY_ENT) {
+            ui_page_set(UI_PAGE_HOME);
+        } else if (key == UI_KEY_UP) {
+            ui_page_delta(+1);
+        } else if (key == UI_KEY_DOWN) {
+            ui_page_delta(-1);
+        }
+        break;
+
+    default:
+        break;
     }
-#else
-    (void)s_tick_ms;
-#endif
+
+    (void)s_last_drawn;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -709,26 +852,35 @@ void loader_ui_init(void)
         return;
     }
 
-    ui_mock_init();
     ui_chart_init();
     s_page = UI_PAGE_HOME;
     s_set_sel = 0;
     s_step_idx = 1; /* 0.1 */
-    s_tick_ms = 0;
+    s_editing = false;
+    s_peak_i = 0.0f;
+    s_peak_p = 0.0f;
     s_last_drawn = (ui_page_t)0xFF;
 
-    ui_fill(UI_COL_BG);
-    ui_draw_page();
-    mjc_hal_present();
+    ui_buttons_init();
+
+    {
+        loader_runtime_t rt = loader_runtime_get();
+        ui_fill(UI_COL_BG);
+        ui_draw_page(&rt);
+        mjc_hal_present();
+    }
 
     s_inited = true;
-    sys_log_text(info, "loader_ui init OK (SIM mode) %ux%u",
+    sys_log_text(info, "loader_ui init OK (runtime+keys) %ux%u",
                  (unsigned)mjc_hal_screen_width(),
                  (unsigned)mjc_hal_screen_height());
 }
 
 void loader_ui_poll(void)
 {
+    loader_runtime_t rt;
+    ui_key_t key;
+
     if (!s_inited) {
         loader_ui_init();
         if (!s_inited) {
@@ -736,23 +888,32 @@ void loader_ui_poll(void)
         }
     }
 
-    s_tick_ms += LOADER_UI_POLL_MS; /* 与 UI 任务周期一致（默认 67ms ≈ 15fps） */
+    /* 保护巡检在中频 state 任务；此处只做人机 */
+    while (ui_key_pop(&key)) {
+        ui_handle_key(key);
+    }
 
-    ui_mock_step();
+    rt = loader_runtime_get();
 
-    /* 主页/全屏图推点：主页永远记电流；全屏按通道 */
+    if (rt.current_measurement > s_peak_i) {
+        s_peak_i = rt.current_measurement;
+    } else {
+        s_peak_i *= 0.999f;
+    }
+    if (rt.power_measurement > s_peak_p) {
+        s_peak_p = rt.power_measurement;
+    } else {
+        s_peak_p *= 0.999f;
+    }
+
     if (!s_chart.paused) {
         if (s_page == UI_PAGE_CHART && s_chart.show_power) {
-            ui_chart_push(s_mock.power);
+            ui_chart_push(rt.power_measurement);
         } else {
-            ui_chart_push(s_mock.current);
+            ui_chart_push(rt.current_measurement);
         }
     }
 
-    ui_poll_user_key();
-    ui_poll_demo_auto_page();
-
-    /* 每帧整屏重绘 */
-    ui_draw_page();
+    ui_draw_page(&rt);
     mjc_hal_present();
 }

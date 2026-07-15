@@ -42,7 +42,11 @@
 | GPIO | PC0 | 红色 LED（推挽输出） | — |
 | GPIO | PC1 | 绿色 LED（推挽输出） | — |
 | GPIO | PC2 | 蓝色 LED（推挽输出） | — |
-| GPIO | PC13 | 用户按键（输入） | — |
+| GPIO | PC13 | 用户按键 USR_KEY（上拉输入，按下低） | — |
+| GPIO | PD15 | UI_UP（上拉输入，按下低） | multi_button / loader_ui |
+| GPIO | PD14 | UI_DOWN（上拉输入，按下低） | multi_button / loader_ui |
+| GPIO | PD13 | UI_ENT（上拉输入，按下低） | multi_button / loader_ui |
+| GPIO | PD12 | UI_BACK（上拉输入，按下低） | multi_button / loader_ui |
 | GPIO | PB4 | TFT DC（推挽输出） | ST7735 数据/命令选择 |
 | GPIO | PB6 | TFT CS（推挽输出） | ST7735 片选 |
 | GPIO | PB7 | TFT RST（推挽输出） | ST7735 复位 |
@@ -70,7 +74,11 @@
 | PC0 | GPIO_Output | 推挽 | 红色 LED |
 | PC1 | GPIO_Output | 推挽 | 绿色 LED |
 | PC2 | GPIO_Output | 推挽 | 蓝色 LED |
-| PC13 | GPIO_Input | — | 用户按键 |
+| PC13 | GPIO_Input | 上拉 | 用户按键 USR_KEY（按下低） |
+| PD12 | GPIO_Input | 上拉 | UI_BACK（按下低） |
+| PD13 | GPIO_Input | 上拉 | UI_ENT（按下低） |
+| PD14 | GPIO_Input | 上拉 | UI_DOWN（按下低） |
+| PD15 | GPIO_Input | 上拉 | UI_UP（按下低） |
 | PB12 | GPIO_Output | 推挽 | SPI Flash CS |
 | PB13 | SPI2_SCK | AF5 (推挽) | SPI Flash 时钟 |
 | PB14 | SPI2_MISO | AF5 (推挽) | SPI Flash 数据输入 |

@@ -1,4 +1,5 @@
 #include "loader_runtime.h"
+#include "loader_config.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -6,13 +7,13 @@ static loader_runtime_t g_loader_runtime = {
     .state = LOADER_STATE_IDLE,
     .error = LOADER_ERROR_NONE,
     .mode = LOADER_MODE_CC,
-    .current_setpoint = 0.0f,
+    .current_setpoint = LOADER_DEFAULT_CURRENT_SETPOINT,
     .current_measurement = 0.0f,
-    .voltage_setpoint = 0.0f,
+    .voltage_setpoint = LOADER_DEFAULT_VOLTAGE_SETPOINT,
     .voltage_measurement = 0.0f,
-    .power_setpoint = 0.0f,
+    .power_setpoint = LOADER_DEFAULT_POWER_SETPOINT,
     .power_measurement = 0.0f,
-    .resistance_setpoint = 0.0f,
+    .resistance_setpoint = LOADER_DEFAULT_RESISTANCE_SETPOINT,
     .resistance_measurement = 0.0f,
     .temperature_measurement = 0.0f,
     .temperature_setpoint = 0.0f
@@ -48,10 +49,15 @@ exit_code_t loader_runtime_init(void)
     g_loader_runtime.state = LOADER_STATE_IDLE;
     g_loader_runtime.error = LOADER_ERROR_NONE;
     g_loader_runtime.mode = LOADER_MODE_CC;
-    g_loader_runtime.current_setpoint = 0.0f;
-    g_loader_runtime.voltage_setpoint = 0.0f;
-    g_loader_runtime.power_setpoint = 0.0f;
-    g_loader_runtime.resistance_setpoint = 0.0f;
+    g_loader_runtime.current_setpoint = LOADER_DEFAULT_CURRENT_SETPOINT;
+    g_loader_runtime.voltage_setpoint = LOADER_DEFAULT_VOLTAGE_SETPOINT;
+    g_loader_runtime.power_setpoint = LOADER_DEFAULT_POWER_SETPOINT;
+    g_loader_runtime.resistance_setpoint = LOADER_DEFAULT_RESISTANCE_SETPOINT;
+    g_loader_runtime.current_measurement = 0.0f;
+    g_loader_runtime.voltage_measurement = 0.0f;
+    g_loader_runtime.power_measurement = 0.0f;
+    g_loader_runtime.resistance_measurement = 0.0f;
+    g_loader_runtime.temperature_measurement = 0.0f;
     loader_runtime_exit(ux_saved, in_isr);
     return EXIT_OK;
 }
@@ -130,5 +136,83 @@ void loader_runtime_clear_fault(void)
         g_loader_runtime.error = LOADER_ERROR_NONE;
         g_loader_runtime.state = LOADER_STATE_IDLE;
     }
+    loader_runtime_exit(ux_saved, in_isr);
+}
+
+void loader_runtime_set_mode(loader_mode_t mode)
+{
+    UBaseType_t ux_saved;
+    BaseType_t in_isr;
+
+    loader_runtime_enter(&ux_saved, &in_isr);
+    g_loader_runtime.mode = mode;
+    loader_runtime_exit(ux_saved, in_isr);
+}
+
+void loader_runtime_set_current_setpoint(float value)
+{
+    UBaseType_t ux_saved;
+    BaseType_t in_isr;
+
+    if (value < 0.0f) {
+        value = 0.0f;
+    }
+    if (value > LOADER_CURRENT_MAX) {
+        value = LOADER_CURRENT_MAX;
+    }
+
+    loader_runtime_enter(&ux_saved, &in_isr);
+    g_loader_runtime.current_setpoint = value;
+    loader_runtime_exit(ux_saved, in_isr);
+}
+
+void loader_runtime_set_voltage_setpoint(float value)
+{
+    UBaseType_t ux_saved;
+    BaseType_t in_isr;
+
+    if (value < 0.0f) {
+        value = 0.0f;
+    }
+    if (value > LOADER_VOLTAGE_MAX) {
+        value = LOADER_VOLTAGE_MAX;
+    }
+
+    loader_runtime_enter(&ux_saved, &in_isr);
+    g_loader_runtime.voltage_setpoint = value;
+    loader_runtime_exit(ux_saved, in_isr);
+}
+
+void loader_runtime_set_power_setpoint(float value)
+{
+    UBaseType_t ux_saved;
+    BaseType_t in_isr;
+
+    if (value < 0.0f) {
+        value = 0.0f;
+    }
+    if (value > LOADER_POWER_MAX) {
+        value = LOADER_POWER_MAX;
+    }
+
+    loader_runtime_enter(&ux_saved, &in_isr);
+    g_loader_runtime.power_setpoint = value;
+    loader_runtime_exit(ux_saved, in_isr);
+}
+
+void loader_runtime_set_resistance_setpoint(float value)
+{
+    UBaseType_t ux_saved;
+    BaseType_t in_isr;
+
+    if (value < LOADER_RESISTANCE_EPSILON) {
+        value = LOADER_RESISTANCE_EPSILON;
+    }
+    if (value > LOADER_RESISTANCE_MAX) {
+        value = LOADER_RESISTANCE_MAX;
+    }
+
+    loader_runtime_enter(&ux_saved, &in_isr);
+    g_loader_runtime.resistance_setpoint = value;
     loader_runtime_exit(ux_saved, in_isr);
 }

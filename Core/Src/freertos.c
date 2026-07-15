@@ -152,8 +152,8 @@ void StartDefaultTask(void *argument)
   if (err) log_rtt_println("lfs_mount failed");
   else log_rtt_println("lfs_mount OK");
 
-  loader_task_init();
-  log_rtt_println("loader_task_init done");
+  loader_task_start();
+  log_rtt_println("loader_task_start done (HF/MF/LF)");
 
   for (;;) {
     osDelay(1000);

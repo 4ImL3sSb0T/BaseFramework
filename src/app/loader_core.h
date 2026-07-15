@@ -8,14 +8,22 @@
 #include "common/tools/common_def.h"
 #include "common/pid/pid.h"
 
+/**
+ * 初始化测量/执行器/风扇/PID，并启动 TIM 高频控制环回调。
+ * 由 loader_task_start() 调用。
+ */
 exit_code_t loader_core_init(void);
 
-/** TIM 控制中断：测 → 护 → 目标 → PID → 写输出 */
+/**
+ * 高频控制环（TIM ISR，~2 kHz）
+ * 测 → 更新 runtime 测量 → 按状态跑模式/PID → 写 load_out
+ */
 void loader_core_control_update(void);
 
 /**
- * 任务侧状态推进（可选）：处理请求类逻辑。
- * 启停请优先用 request_run / request_stop / clear_fault。
+ * 中频状态/保护（loader_state 任务，~5 ms）
+ * OCP/OTP 等软件保护；不跑控制公式。
+ * 启停请用 request_run / request_stop / clear_fault。
  */
 void loader_core_state_update(void *arg);
 

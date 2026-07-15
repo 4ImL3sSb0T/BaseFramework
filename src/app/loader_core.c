@@ -220,19 +220,21 @@ void loader_core_control_update(void)
 
 void loader_core_state_update(void *arg)
 {
+    (void)arg;
     loader_runtime_t runtime = loader_runtime_get();
 
+    /* 已在故障则只保持关断语义由 control_update 保证，避免重复 enter */
+    if (runtime.state == LOADER_STATE_ERROR) {
+        return;
+    }
+
     if (runtime.current_measurement > LOADER_OVERCURRENT_LIMIT) {
-        loader_core_output_off();
         loader_core_fault_trigger(LOADER_ERROR_OVERCURRENT);
-        loader_runtime_set_state(LOADER_STATE_ERROR);
-        loader_runtime_enter_fault(LOADER_ERROR_OVERCURRENT);
+        return;
     }
     if (runtime.temperature_measurement > LOADER_OVERTEMPERATURE_LIMIT) {
-        loader_core_output_off();
         loader_core_fault_trigger(LOADER_ERROR_OVERTEMPERATURE);
-        loader_runtime_set_state(LOADER_STATE_ERROR);
-        loader_runtime_enter_fault(LOADER_ERROR_OVERTEMPERATURE);
+        return;
     }
 }
 
