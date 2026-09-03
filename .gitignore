@@ -22,6 +22,7 @@
 *.tra
 *.Administrator
 *.scvd
+*.png
 
 # Listing files (汇编器生成，除 startup 外全部忽略)
 *.lst

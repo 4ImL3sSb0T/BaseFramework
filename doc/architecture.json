@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "STM32H750 电子负载框架架构",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "viewBox": [1180, 660],
+    "views": [
+      { "id": "main-path", "label": "主控制路径", "focus": ["core", "load_out", "bsp", "hw"], "note": "控制环：core 算目标 → load_out 映射 DAC → bsp 驱动 → 硬件。" },
+      { "id": "setting-input", "label": "设定与调试", "focus": ["hmi", "runtime", "core", "shell"], "note": "人机 / CLI 只写设定，core 是唯一写执行器。" },
+      { "id": "measure-loop", "label": "采样反馈", "focus": ["core", "sense", "bsp", "hw", "common"], "note": "measure → 标定 → PID（common）→ 输出，形成闭环。" }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "origin": [60, 60],
+    "cols": 6,
+    "gapX": 32,
+    "gapY": 30,
+    "cellW": 200,
+    "cellH": 60
+  },
+  "components": [
+    { "id": "hmi", "type": "frontend", "label": "loader_ui · cli", "sublabel": "TFT 按键 · 串口调试", "pos": [110, 40], "size": [180, 58] },
+    { "id": "runtime", "type": "backend", "label": "loader_runtime", "sublabel": "设定 / 测量 / 状态", "pos": [110, 140], "size": [180, 66], "tag": "共享状态" },
+    { "id": "task", "type": "backend", "label": "loader_task", "sublabel": "FreeRTOS 任务 · 周期调度", "pos": [480, 40], "size": [180, 54] },
+    { "id": "core", "type": "backend", "label": "loader_core", "sublabel": "FSM · 4 模式 · PID 环", "pos": [400, 130], "size": [340, 92], "tag": "唯一写执行器" },
+    { "id": "rtos", "type": "backend", "label": "FreeRTOS", "sublabel": "CMSIS-RTOS V2 · heap_4", "pos": [790, 40], "size": [170, 54] },
+    { "id": "common", "type": "backend", "label": "common", "sublabel": "PID · 滤波 · 事件 · 工具", "pos": [790, 143], "size": [170, 66] },
+
+    { "id": "sense", "type": "backend", "label": "service/sense", "sublabel": "V/I 标定采样", "pos": [330, 300], "size": [150, 58] },
+    { "id": "load_out", "type": "backend", "label": "service/load_out", "sublabel": "归一化 → DAC 映射", "pos": [560, 300], "size": [160, 58] },
+    { "id": "shell", "type": "backend", "label": "service/shell", "sublabel": "CLI · 日志 · 时间", "pos": [770, 300], "size": [150, 58] },
+    { "id": "storage", "type": "database", "label": "SPI Flash + LFS", "sublabel": "SFUD · 文件系统", "pos": [950, 300], "size": [150, 58] },
+
+    { "id": "bsp", "type": "backend", "label": "bsp / driver", "sublabel": "ADC · DAC · TIM · UART · SPI · GPIO", "pos": [360, 400], "size": [760, 80] },
+
+    { "id": "hw", "type": "external", "label": "STM32H750", "sublabel": "TFT · SPI Flash · ADC · DAC · Fan", "pos": [580, 540], "size": [320, 80], "tag": "外部 QSPI XIP" }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "app / loader — 产品逻辑", "wraps": ["hmi", "task", "core", "runtime"] },
+    { "kind": "region", "label": "service — 领域能力", "wraps": ["sense", "load_out", "shell", "storage"] },
+    { "kind": "region", "label": "bsp / driver — 硬件边界", "wraps": ["bsp"] },
+    { "kind": "region", "label": "common / middleware — 纯算法 · 内核", "wraps": ["common", "rtos"] },
+    { "kind": "region", "label": "hardware — 硬件层", "wraps": ["hw"] }
+  ],
+  "connections": [
+    { "id": "hmi-set", "from": "hmi", "to": "runtime", "label": "写设定", "fromSide": "bottom", "toSide": "top", "labelAt": [200, 122] },
+    { "id": "runtime-core", "from": "runtime", "to": "core", "label": "读设定 · 状态", "fromSide": "right", "toSide": "left", "labelAt": [330, 184] },
+    { "id": "task-core", "from": "task", "to": "core", "label": "init · 周期回调", "fromSide": "bottom", "toSide": "top", "labelAt": [570, 106] },
+    { "id": "rtos-task", "from": "rtos", "to": "task", "label": "任务调度", "fromSide": "left", "toSide": "right", "labelAt": [740, 74] },
+    { "id": "core-sense", "from": "core", "to": "sense", "label": "读 V/I/T", "fromSide": "bottom", "toSide": "top", "labelAt": [430, 252] },
+    { "id": "core-load", "from": "core", "to": "load_out", "label": "写 I_target", "fromSide": "bottom", "toSide": "top", "labelAt": [650, 252] },
+    { "id": "core-common", "from": "core", "to": "common", "label": "PID · 滤波", "fromSide": "right", "toSide": "left", "labelAt": [758, 240] },
+    { "id": "sense-bsp", "from": "sense", "to": "bsp", "label": "ADC DMA", "fromSide": "bottom", "toSide": "top", "labelAt": [405, 366] },
+    { "id": "load-bsp", "from": "load_out", "to": "bsp", "label": "DAC 码值", "fromSide": "bottom", "toSide": "top", "labelAt": [640, 366] },
+    { "id": "shell-bsp", "from": "shell", "to": "bsp", "label": "UART", "fromSide": "bottom", "toSide": "top", "labelAt": [845, 366] },
+    { "id": "storage-bsp", "from": "storage", "to": "bsp", "label": "SPI Flash", "fromSide": "bottom", "toSide": "top", "labelAt": [1025, 366] },
+    { "id": "bsp-hw", "from": "bsp", "to": "hw", "label": "驱动硬件", "variant": "emphasis", "fromSide": "bottom", "toSide": "top", "labelAt": [740, 512] }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "app — 产品逻辑", "items": ["loader_core 唯一写执行器：FSM + 4 模式 + PID", "loader_ui / cli 只写设定、只读 runtime"] },
+    { "dot": "emerald", "title": "service — 领域能力", "items": ["sense 标定采样 V/I/T；load_out 归一化 → DAC", "shell 串口 CLI/日志；SPI Flash + LFS"] },
+    { "dot": "violet", "title": "运行与硬件", "items": ["FreeRTOS + SEGGER SystemView 追踪", "QSPI XIP @ 0x90000000；依赖只能向下"] }
+  ]
+}
