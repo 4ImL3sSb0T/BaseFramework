@@ -28,7 +28,7 @@ STM32H750VBTx (Cortex-M7) 嵌入式基础框架，基于 STM32CubeMX 生成，�
   - `MDK-ARM/BaseFramework.uvoptx`
 - **用户自由文件**（CubeMX 不触碰）：
   - `Core/Inc/SEGGER/`、`Core/Src/SEGGER/` — 手动添加的 SEGGER SystemView
-  - `src/` — 用户应用层代码目录（`app/`、`bsp/`、`driver/`、`service/`）
+  - `src/` — 用户代码（`app/`、`board/`、`lib/`）；`Core/` 只留 CubeMX 生成代码
 
 ## 代码架构
 
@@ -48,7 +48,7 @@ Core/           ← CubeMX 管理：HAL 配置、FreeRTOSConfig、外设初始�
 Drivers/        ← 只读：STM32H7 HAL + CMSIS
 Middlewares/    ← 只读：FreeRTOS 内核源码
 MDK-ARM/        ← Keil 工程、启动文件、编译输出
-src/            ← 用户应用层（分层：app/ bsp/ driver/ service/）
+src/            ← 用户代码（app 产品 / board 板级 / lib 第三方与算法）
 BaseFramework.ioc  ← CubeMX 项目配置（跟踪）
 ```
 

@@ -3,10 +3,10 @@
 
 /* fsm + mode + control；唯一写执行器 — 见 LOADER_DESIGN.md */
 #include "loader_runtime.h"
-#include "service/sense/sense.h"
-#include "service/load/load_out.h"
-#include "common/tools/common_def.h"
-#include "common/pid/pid.h"
+#include "board/sense/sense.h"
+#include "board/load/load_out.h"
+#include "lib/tools/common_def.h"
+#include "lib/pid/pid.h"
 
 /**
  * 初始化测量/执行器/风扇/PID，并启动 TIM 高频控制环回调。

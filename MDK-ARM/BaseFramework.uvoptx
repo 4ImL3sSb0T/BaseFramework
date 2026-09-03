@@ -166,9 +166,9 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>../src/service/cli/log/log.c</Filename>
+          <Filename>../src/lib/shell/log/log.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\BaseFramework\../src/service/cli/log/log.c\273</Expression>
+          <Expression>\\BaseFramework\../src/lib/shell/log/log.c\273</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
@@ -198,7 +198,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>../src/service/lfs/lfs.c</Filename>
+          <Filename>../src/lib/lfs/lfs.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -214,7 +214,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>../src/service/lfs/lfs.c</Filename>
+          <Filename>../src/lib/lfs/lfs.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -1028,7 +1028,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/spi_flash/spi_flash.c</PathWithFileName>
+      <PathWithFileName>../src/board/flash/spi_flash.c</PathWithFileName>
       <FilenameWithoutPath>spi_flash.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1040,7 +1040,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/rtt/rtt.c</PathWithFileName>
+      <PathWithFileName>../src/board/rtt/rtt.c</PathWithFileName>
       <FilenameWithoutPath>rtt.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1052,7 +1052,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/uart/uart_async.c</PathWithFileName>
+      <PathWithFileName>../src/board/uart/uart_async.c</PathWithFileName>
       <FilenameWithoutPath>uart_async.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1064,7 +1064,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/dac/bsp_dac.c</PathWithFileName>
+      <PathWithFileName>../src/board/dac/bsp_dac.c</PathWithFileName>
       <FilenameWithoutPath>bsp_dac.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1076,7 +1076,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/dac/bsp_dac.h</PathWithFileName>
+      <PathWithFileName>../src/board/dac/bsp_dac.h</PathWithFileName>
       <FilenameWithoutPath>bsp_dac.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1088,7 +1088,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/adc/bsp_adc.c</PathWithFileName>
+      <PathWithFileName>../src/board/adc/bsp_adc.c</PathWithFileName>
       <FilenameWithoutPath>bsp_adc.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1100,7 +1100,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/adc/bsp_adc.h</PathWithFileName>
+      <PathWithFileName>../src/board/adc/bsp_adc.h</PathWithFileName>
       <FilenameWithoutPath>bsp_adc.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1112,7 +1112,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/fan/bsp_fan.c</PathWithFileName>
+      <PathWithFileName>../src/board/fan/bsp_fan.c</PathWithFileName>
       <FilenameWithoutPath>bsp_fan.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1124,7 +1124,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/fan/bsp_fan.h</PathWithFileName>
+      <PathWithFileName>../src/board/fan/bsp_fan.h</PathWithFileName>
       <FilenameWithoutPath>bsp_fan.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1136,7 +1136,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/gpio/bsp_gpio.c</PathWithFileName>
+      <PathWithFileName>../src/board/gpio/bsp_gpio.c</PathWithFileName>
       <FilenameWithoutPath>bsp_gpio.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1148,7 +1148,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/gpio/bsp_gpio.h</PathWithFileName>
+      <PathWithFileName>../src/board/gpio/bsp_gpio.h</PathWithFileName>
       <FilenameWithoutPath>bsp_gpio.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1168,7 +1168,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/load/load_out.c</PathWithFileName>
+      <PathWithFileName>../src/board/load/load_out.c</PathWithFileName>
       <FilenameWithoutPath>load_out.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1180,7 +1180,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/load/load_out.h</PathWithFileName>
+      <PathWithFileName>../src/board/load/load_out.h</PathWithFileName>
       <FilenameWithoutPath>load_out.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1192,7 +1192,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/sense/sense.c</PathWithFileName>
+      <PathWithFileName>../src/board/sense/sense.c</PathWithFileName>
       <FilenameWithoutPath>sense.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1204,7 +1204,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/sense/sense.h</PathWithFileName>
+      <PathWithFileName>../src/board/sense/sense.h</PathWithFileName>
       <FilenameWithoutPath>sense.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1216,7 +1216,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/fan/fan.c</PathWithFileName>
+      <PathWithFileName>../src/board/fan/fan.c</PathWithFileName>
       <FilenameWithoutPath>fan.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1228,7 +1228,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/fan/fan.h</PathWithFileName>
+      <PathWithFileName>../src/board/fan/fan.h</PathWithFileName>
       <FilenameWithoutPath>fan.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1248,7 +1248,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/sfud/src/sfud.c</PathWithFileName>
+      <PathWithFileName>../src/lib/sfud/src/sfud.c</PathWithFileName>
       <FilenameWithoutPath>sfud.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1260,7 +1260,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/sfud/src/sfud_sfdp.c</PathWithFileName>
+      <PathWithFileName>../src/lib/sfud/src/sfud_sfdp.c</PathWithFileName>
       <FilenameWithoutPath>sfud_sfdp.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1272,7 +1272,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/sfud/port/sfud_port.c</PathWithFileName>
+      <PathWithFileName>../src/lib/sfud/port/sfud_port.c</PathWithFileName>
       <FilenameWithoutPath>sfud_port.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1284,7 +1284,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\src\bsp\tim\bsp_timer.c</PathWithFileName>
+      <PathWithFileName>..\src\board\tim\bsp_timer.c</PathWithFileName>
       <FilenameWithoutPath>bsp_timer.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1296,7 +1296,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\src\bsp\tim\bsp_timer.h</PathWithFileName>
+      <PathWithFileName>..\src\board\tim\bsp_timer.h</PathWithFileName>
       <FilenameWithoutPath>bsp_timer.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1316,7 +1316,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/lfs/lfs.c</PathWithFileName>
+      <PathWithFileName>../src/lib/lfs/lfs.c</PathWithFileName>
       <FilenameWithoutPath>lfs.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1328,7 +1328,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/lfs/lfs_util.c</PathWithFileName>
+      <PathWithFileName>../src/lib/lfs/lfs_util.c</PathWithFileName>
       <FilenameWithoutPath>lfs_util.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1340,7 +1340,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/lfs/lfs_port.c</PathWithFileName>
+      <PathWithFileName>../src/lib/lfs/lfs_port.c</PathWithFileName>
       <FilenameWithoutPath>lfs_port.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1360,7 +1360,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/tft_port/Arduino.cpp</PathWithFileName>
+      <PathWithFileName>../src/board/tft/Arduino.cpp</PathWithFileName>
       <FilenameWithoutPath>Arduino.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1372,7 +1372,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/tft_port/Print.cpp</PathWithFileName>
+      <PathWithFileName>../src/board/tft/Print.cpp</PathWithFileName>
       <FilenameWithoutPath>Print.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1384,7 +1384,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/tft_port/SpiWrapper.cpp</PathWithFileName>
+      <PathWithFileName>../src/board/tft/SpiWrapper.cpp</PathWithFileName>
       <FilenameWithoutPath>SpiWrapper.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1396,7 +1396,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/bsp/tft_port/tft_fb.cpp</PathWithFileName>
+      <PathWithFileName>../src/board/tft/tft_fb.cpp</PathWithFileName>
       <FilenameWithoutPath>tft_fb.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1416,7 +1416,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/gfx/Adafruit_GFX.cpp</PathWithFileName>
+      <PathWithFileName>../src/lib/gfx/Adafruit_GFX.cpp</PathWithFileName>
       <FilenameWithoutPath>Adafruit_GFX.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1428,7 +1428,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/gfx/Adafruit_SPITFT.cpp</PathWithFileName>
+      <PathWithFileName>../src/lib/gfx/Adafruit_SPITFT.cpp</PathWithFileName>
       <FilenameWithoutPath>Adafruit_SPITFT.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1448,7 +1448,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/driver/st7735/Adafruit_ST77xx.cpp</PathWithFileName>
+      <PathWithFileName>../src/lib/st7735/Adafruit_ST77xx.cpp</PathWithFileName>
       <FilenameWithoutPath>Adafruit_ST77xx.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1460,7 +1460,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/driver/st7735/Adafruit_ST7735.cpp</PathWithFileName>
+      <PathWithFileName>../src/lib/st7735/Adafruit_ST7735.cpp</PathWithFileName>
       <FilenameWithoutPath>Adafruit_ST7735.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1596,7 +1596,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/gui/MujicaUI_Lite/mjc_hal.c</PathWithFileName>
+      <PathWithFileName>../src/lib/gui/MujicaUI_Lite/mjc_hal.c</PathWithFileName>
       <FilenameWithoutPath>mjc_hal.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1608,7 +1608,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/gui/MujicaUI_Lite/mjc_hal_gfx.cpp</PathWithFileName>
+      <PathWithFileName>../src/lib/gui/MujicaUI_Lite/mjc_hal_gfx.cpp</PathWithFileName>
       <FilenameWithoutPath>mjc_hal_gfx.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1620,7 +1620,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/gui/MujicaUI_Lite/mjc_core.c</PathWithFileName>
+      <PathWithFileName>../src/lib/gui/MujicaUI_Lite/mjc_core.c</PathWithFileName>
       <FilenameWithoutPath>mjc_core.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1632,7 +1632,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/gui/MujicaUI_Lite/mjc_render.c</PathWithFileName>
+      <PathWithFileName>../src/lib/gui/MujicaUI_Lite/mjc_render.c</PathWithFileName>
       <FilenameWithoutPath>mjc_render.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1644,7 +1644,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/gui/multi_button.c</PathWithFileName>
+      <PathWithFileName>../src/lib/gui/multi_button.c</PathWithFileName>
       <FilenameWithoutPath>multi_button.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1664,7 +1664,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/cli/shell.c</PathWithFileName>
+      <PathWithFileName>../src/lib/shell/shell.c</PathWithFileName>
       <FilenameWithoutPath>shell.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1676,7 +1676,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/cli/shell_cmd_list.c</PathWithFileName>
+      <PathWithFileName>../src/lib/shell/shell_cmd_list.c</PathWithFileName>
       <FilenameWithoutPath>shell_cmd_list.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1688,7 +1688,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/cli/shell_companion.c</PathWithFileName>
+      <PathWithFileName>../src/lib/shell/shell_companion.c</PathWithFileName>
       <FilenameWithoutPath>shell_companion.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1700,7 +1700,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/cli/shell_ext.c</PathWithFileName>
+      <PathWithFileName>../src/lib/shell/shell_ext.c</PathWithFileName>
       <FilenameWithoutPath>shell_ext.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1712,7 +1712,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/cli/cpu_cmd.c</PathWithFileName>
+      <PathWithFileName>../src/lib/shell/cpu_cmd.c</PathWithFileName>
       <FilenameWithoutPath>cpu_cmd.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1724,7 +1724,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/cli/log/log.c</PathWithFileName>
+      <PathWithFileName>../src/lib/shell/log/log.c</PathWithFileName>
       <FilenameWithoutPath>log.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1736,7 +1736,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/cli/port/shell_port.c</PathWithFileName>
+      <PathWithFileName>../src/lib/shell/port/shell_port.c</PathWithFileName>
       <FilenameWithoutPath>shell_port.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1756,7 +1756,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/sys/sys_log.c</PathWithFileName>
+      <PathWithFileName>../src/board/sys/sys_log.c</PathWithFileName>
       <FilenameWithoutPath>sys_log.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1768,7 +1768,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/service/sys/sys_time.c</PathWithFileName>
+      <PathWithFileName>../src/board/sys/sys_time.c</PathWithFileName>
       <FilenameWithoutPath>sys_time.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1788,7 +1788,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/common/tools/common_def.c</PathWithFileName>
+      <PathWithFileName>../src/lib/tools/common_def.c</PathWithFileName>
       <FilenameWithoutPath>common_def.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1800,7 +1800,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/common/pid/pid.c</PathWithFileName>
+      <PathWithFileName>../src/lib/pid/pid.c</PathWithFileName>
       <FilenameWithoutPath>pid.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1812,7 +1812,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../src/common/pid/pid.h</PathWithFileName>
+      <PathWithFileName>../src/lib/pid/pid.h</PathWithFileName>
       <FilenameWithoutPath>pid.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

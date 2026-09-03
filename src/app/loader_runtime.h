@@ -3,7 +3,7 @@
 
 #include "stdint.h"
 #include "stdbool.h"
-#include "common/tools/common_def.h"
+#include "lib/tools/common_def.h"
 
 typedef enum {
     LOADER_STATE_IDLE,

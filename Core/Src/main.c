@@ -30,8 +30,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "sfud.h"
-#include "spi_flash.h"
+#include "board/board.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -123,10 +122,7 @@ int main(void)
   MX_OPAMP1_Init();
   MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
-  hspi2.Instance->CFG1 = (hspi2.Instance->CFG1 & ~SPI_CFG1_MBR)
-                       | (2UL << SPI_CFG1_MBR_Pos);
-  __HAL_SPI_ENABLE(&hspi2);
-  spi_flash_read_write_byte(0xFF);
+  board_early_init();
   /* USER CODE END 2 */
 
   /* Init scheduler */

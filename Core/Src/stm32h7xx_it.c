@@ -22,9 +22,7 @@
 #include "stm32h7xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "bsp/adc/bsp_adc.h"
-#include "bsp/tim/bsp_timer.h"
-#include "app/loader_runtime.h"
+#include "board/tim/bsp_timer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

@@ -15,14 +15,13 @@ flowchart LR
   end
 
   subgraph SW[软件栈]
-    APP[app/loader<br/>状态机 · UI · CLI]
-    SVC[service<br/>sense · load · shell · gui]
-    BSP[bsp / driver]
+    APP[src/app<br/>这台负载在干什么]
+    BOARD[src/board<br/>这块板能提供什么]
     RTOS[FreeRTOS + SEGGER SystemView]
   end
 
   MCU --- TFT & FLASH & SENSE & DAC & FAN
-  APP --> SVC --> BSP --> MCU
+  APP --> BOARD --> MCU
   RTOS -.-> APP
 ```
 
@@ -43,45 +42,43 @@ flowchart LR
 
 ## 软件分层
 
-依赖**只能向下**，禁止 `service` / `bsp` 反包含 `app`。
+手写代码全部在 `src/`。`Core/` 是 CubeMX 生成的 HAL/RTOS 启动，只留入口调用。
+
+```
+app     这台负载在干什么     →  src/app/
+board   这块板能提供什么     →  src/board/
+mcu     Cube 生成的芯片启动   →  Core/ + Drivers/ + Middlewares/
+```
+
+`src/lib/` 是库（PID、shell、lfs、GFX…），不当一层。
 
 ```mermaid
 flowchart TB
-  subgraph APP[app — 产品逻辑]
+  subgraph APP[app — 产品]
     L1[loader_core · 状态机 / 模式 / PID]
     L2[loader_ui · loader_cli]
     L3[loader_task · 周期调度]
-    L4[loader_runtime · 共享状态]
   end
 
-  subgraph SVC[service — 领域能力]
-    S1[sense 采样物理量]
-    S2[load_out 执行器]
-    S3[shell / log / sys]
-    S4[gui · fan · lfs · sfud]
+  subgraph BOARD[board — 板级]
+    B1[sense / load_out / fan]
+    B2[ADC · DAC · GPIO · UART · TFT]
   end
 
-  subgraph BSP[bsp / driver — 硬件边界]
-    B1[ADC · DAC · TIM · UART]
-    B2[SPI Flash · TFT · GPIO]
+  subgraph MCU[mcu — Cube 生成]
+    M1[Core HAL · FreeRTOS]
   end
 
-  subgraph COM[common — 纯算法]
-    C1[PID · 滤波 · 事件 · 数学工具]
-  end
-
-  APP --> SVC
-  SVC --> BSP
-  APP --> COM
-  SVC --> COM
+  APP --> BOARD --> MCU
 ```
 
 | 层 | 一句话 | 放什么 |
 |----|--------|--------|
-| **app** | 认「这台负载」 | 模式、状态机、UI、CLI、任务 |
-| **service** | 认物理量与规则 | V/I 标定、保护、Shell、文件系统、GUI |
-| **bsp / driver** | 只认硬件 | ADC/DAC 码值、SPI、PWM、GPIO |
-| **common** | 换板子还能用 | PID、滤波、限幅、工具 |
+| **app** | 这台负载 | 模式、状态机、UI、CLI、任务 |
+| **board** | 这块板 | V/I/℃、DAC 输出、按键、屏、串口 |
+| **mcu** | 这颗芯片 | Cube 时钟/外设/`MX_*_Init` |
+
+依赖只能向下：`app` → `board` → HAL。`board` / `lib` 不准 include `app/`。
 
 ---
 
@@ -98,10 +95,8 @@ flowchart LR
   ROOT --> Doc[doc/<br/>hardware.md]
 
   Src --> App[app/]
-  Src --> Bsp[bsp/]
-  Src --> Drv[driver/]
-  Src --> Svc[service/]
-  Src --> Cmn[common/]
+  Src --> Board[board/]
+  Src --> Lib[lib/]
 ```
 
 ```
@@ -110,12 +105,10 @@ BaseFramework/
 ├── Drivers/              ← 只读：STM32H7 HAL + CMSIS
 ├── Middlewares/          ← 只读：FreeRTOS 内核
 ├── MDK-ARM/              ← Keil 工程、启动文件、scatter、编译输出
-├── src/                  ← 用户代码（CubeMX 不触碰）
-│   ├── app/              ← 电子负载：状态机 / UI / CLI / 任务
-│   ├── bsp/              ← 板级：ADC DAC UART SPI Flash TFT 等
-│   ├── driver/           ← 器件驱动：ST7735、IMU…
-│   ├── service/          ← 服务：sense load shell gui lfs sfud fan
-│   └── common/           ← 算法：pid filter event tools
+├── src/                  ← 本项目手写代码（CubeMX 不触碰）
+│   ├── app/              ← 产品：状态机 / UI / CLI / 任务
+│   ├── board/            ← 板级：sense load fan ADC DAC UART TFT
+│   └── lib/              ← 库：pid shell lfs sfud gfx gui
 ├── doc/hardware.md       ← 引脚 / 时钟 / MPU / 内存（权威硬件文档）
 ├── BaseFramework.ioc     ← CubeMX 工程
 └── README.md
@@ -224,8 +217,8 @@ flowchart TB
   RT[loader_runtime<br/>设定 / 测量 / 状态]
   UI[loader_ui]
   CLI[loader_cli]
-  SENSE[service/sense]
-  OUT[service/load_out]
+  SENSE[board/sense]
+  OUT[board/load]
 
   TASK --> CORE
   UI --> RT
@@ -285,16 +278,17 @@ flowchart LR
 
 ## 启动流程（软件）
 
-`defaultTask` 中完成外设与应用拉起：
+`defaultTask` 只调 `app_start()`：
 
 ```mermaid
 flowchart TD
-  A[StartDefaultTask] --> B[dwt_init · sys_log_init]
-  B --> C[uart_async + shell_port]
-  C --> D[lfs_port_init]
-  D --> E[loader 任务 / 其它服务]
-  E --> F[调度循环]
+  A[StartDefaultTask] --> B[app_start]
+  B --> C[board_init<br/>日志 / 串口 shell / LFS]
+  C --> D[loader_task_start]
+  D --> E[调度循环]
 ```
+
+`main` 在 RTOS 启动前调用 `board_early_init()`（SPI Flash dummy）。
 
 ---
 
