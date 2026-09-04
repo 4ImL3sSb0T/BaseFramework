@@ -1,9 +1,9 @@
 /*
- * sys_log.c — system log backend via SEGGER RTT (board/rtt)
+ * sys_log.c — system log backend via SEGGER RTT (bsp/rtt)
  */
 
 #include "sys_log.h"
-#include "rtt.h"
+#include "bsp/rtt/rtt.h"
 #include "SEGGER_RTT.h"
 #include <stdarg.h>
 #include <stdio.h>

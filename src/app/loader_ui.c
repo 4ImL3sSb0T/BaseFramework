@@ -16,11 +16,11 @@
 #include "loader_runtime.h"
 #include "loader_core.h"
 #include "loader_config.h"
-#include "board/gpio/bsp_gpio.h"
+#include "bsp/gpio/bsp_gpio.h"
 #include "multi_button.h"
 #include "mjc_hal.h"
 #include "mjc_hal_gfx.h"
-#include "board/sys/sys_log.h"
+#include "bsp/sys/sys_log.h"
 #include "FreeRTOS.h"
 #include "task.h"
 

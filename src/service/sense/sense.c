@@ -1,5 +1,5 @@
 #include "sense.h"
-#include "board/adc/bsp_adc.h"
+#include "driver/adc/bsp_adc.h"
 
 static sense_mode_t g_sense_mode = SENSE_MODE_ADC;
 

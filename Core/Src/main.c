@@ -30,7 +30,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "board/board.h"
+#include "bsp/board.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

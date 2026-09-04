@@ -1,8 +1,8 @@
 #include "app/app.h"
 
-#include "board/board.h"
+#include "bsp/board.h"
 #include "loader_task.h"
-#include "rtt.h"
+#include "bsp/rtt/rtt.h"
 
 void app_start(void)
 {

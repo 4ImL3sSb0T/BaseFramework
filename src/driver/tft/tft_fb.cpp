@@ -7,7 +7,7 @@
  * with one (or few) SPI DMA transfers — no per-chunk bswap + blocking TX.
  */
 #include "tft_fb.h"
-#include "tft_port.h"
+#include "bsp/tft/tft_port.h"
 #include "SpiWrapper.h"
 #include "Arduino.h"
 

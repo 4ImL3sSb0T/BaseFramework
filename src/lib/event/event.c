@@ -7,8 +7,8 @@
  */
 
 #include "event.h"
-#include "board/sys/sys_time.h"
-#include "board/sys/sys_log.h"
+#include "bsp/sys/sys_time.h"
+#include "bsp/sys/sys_log.h"
 #include "zf_common_interrupt.h"
 #include "zf_common_typedef.h"
 #if EVENT_ENABLE_ASYNC

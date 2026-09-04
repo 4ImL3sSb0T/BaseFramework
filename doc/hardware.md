@@ -37,7 +37,7 @@
 | SPI2 | PB13 (SCK), PB14 (MISO), PB15 (MOSI), PB12 (CS) | Master, 48 Mbps, CPOL=1 CPHA=1, MSB, 8-bit, 软件 NSS | 外接 SPI Flash，CS 由 PB12 GPIO 控制 |
 | ADC1 | PA6 (INP3), PA7 (INP7), PB1 (INP5) | 12-bit、单端、扫描 **3** 通道、连续转换、软件触发；V/I 采样 64.5 cycles，温度 387.5 cycles；DMA 循环 | DMA2_Stream0 (ADC1, Circular, halfword)；应用层 `bsp_adc` / `sense` |
 | DAC1 | PA4 (`LOADER_REF`) | CH1，12-bit，软件触发，输出缓冲关闭，工厂 trim | 电子负载电流/功率级基准；应用层经 `bsp_dac` / `load_out` 驱动 |
-| TIM15 | PE5 (`FUN_PWM` / 风扇) | PWM CH1；Cube PSC=240，ARR 在 `bsp_fan_init` 改为 39（约 25 kHz） | 风扇驱动；`bsp_fan` / `board/fan` |
+| TIM15 | PE5 (`FUN_PWM` / 风扇) | PWM CH1；Cube PSC=240，ARR 在 `bsp_fan_init` 改为 39（约 25 kHz） | 风扇驱动；`bsp_fan` / `service/fan` |
 | TIM17 | 内部 | HAL 时基（1ms） | TIM17_IRQn → HAL_IncTick() |
 | GPIO | PC0 | 红色 LED（推挽输出） | — |
 | GPIO | PC1 | 绿色 LED（推挽输出） | — |
@@ -137,7 +137,7 @@ C 库 `Heap_Size=0x400` 在 AXI；任务栈 / 队列从 FreeRTOS heap（DTCM）�
 
 ## DAC1（负载基准 LOADER_REF）
 
-CubeMX 已生成 `MX_DAC1_Init()`；应用层启动与码值写入见 `src/board/dac`、`src/board/load`。
+CubeMX 已生成 `MX_DAC1_Init()`；应用层启动与码值写入见 `src/driver/dac`、`src/service/load_out`。
 
 | 参数 | 值 |
 |------|-----|
@@ -158,7 +158,7 @@ CubeMX 已生成 `MX_DAC1_Init()`；应用层启动与码值写入见 `src/board
 
 ## ADC1（电压 / 电流 / 温度采样）
 
-用于电子负载测量通道，CubeMX 已生成 `MX_ADC1_Init()`；应用层见 `src/board/adc`、`src/board/sense`。
+用于电子负载测量通道，CubeMX 已生成 `MX_ADC1_Init()`；应用层见 `src/driver/adc`、`src/service/sense`。
 
 | 参数 | 值 |
 |------|-----|
@@ -202,7 +202,7 @@ CubeMX 已生成 `MX_DAC1_Init()`；应用层启动与码值写入见 `src/board
 | 应用 ARR | `bsp_fan_init` 设为 39 → 约 **25 kHz** |
 | 占空比 | `bsp_fan_set_duty(0..1)` / `fan_set_speed` / `fan_set_percent` |
 
-上层优先用 `board/fan`（enable + 目标转速）；禁止 UI 直接写 TIM 寄存器。
+上层优先用 `service/fan`（enable + 目标转速）；禁止 UI 直接写 TIM 寄存器。
 
 ## SFUD (Serial Flash Universal Driver Library)
 
@@ -247,4 +247,4 @@ CubeMX 已生成 `MX_DAC1_Init()`；应用层启动与码值写入见 `src/board
 | SPI TX DMA | DMA1_Stream2 / `DMA_REQUEST_SPI1_TX`；大块像素经 `HAL_SPI_Transmit_DMA` |
 | 渲染方式 | 离屏 FB RGB565 LE（AXI）；推送前换端序到 `.dma_buf` 暂存区再 DMA |
 | 刷新方式 | 先画到 buffer，再 `tft_fb_flush()` / `tft_fb_flush_rect()`（整区一次 DMA） |
-| Adafruit 驱动 | ST7735 → ST77xx → SPITFT → GFX；应用层经 `src/board/tft/tft_fb.*` / `SpiWrapper` |
+| Adafruit 驱动 | ST7735 → ST77xx → SPITFT → GFX；应用层经 `src/driver/tft/tft_fb.*` / `SpiWrapper` |

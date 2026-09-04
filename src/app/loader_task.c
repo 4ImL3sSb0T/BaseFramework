@@ -3,7 +3,7 @@
 #include "cmsis_os2.h"
 #include "loader_core.h"
 #include "multi_button.h"
-#include "board/sys/sys_log.h"
+#include "bsp/sys/sys_log.h"
 
 /* -------------------------------------------------------------------------- */
 /* 任务参数                                                                    */

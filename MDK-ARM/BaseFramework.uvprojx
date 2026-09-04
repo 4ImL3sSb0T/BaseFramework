@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>APPLICATION_ADDRESS=0x90000000U,USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H750xx,LFS_DEFINES=lfs_armclang_port.h</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/ST/ARM/DSP/Inc;../Core/Inc/SEGGER;../src;../src/lib/sfud/inc;../src/lib/lfs;../src/board/flash;../src/board/rtt;../src/board/uart;../src/board/tft;../src/lib/gfx;../src/lib/gfx/Fonts;../src/lib/st7735;../src/lib/shell;../src/lib/shell/log;../src/lib/shell/port;../src/board/sys;../src/lib/tools;../src/lib/gui;../src/lib/gui/MujicaUI_Lite</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/ST/ARM/DSP/Inc;../Core/Inc/SEGGER;../src;../src/lib/sfud/inc;../src/lib/lfs;../src/driver/flash;../src/driver/uart;../src/driver/tft;../src/lib/gfx;../src/lib/gfx/Fonts;../src/lib/st7735;../src/lib/shell;../src/lib/shell/log;../src/lib/tools;../src/lib/gui;../src/lib/gui/MujicaUI_Lite</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1365,107 +1365,162 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Application/User/Board</GroupName>
+          <GroupName>Application/User/Bsp</GroupName>
           <Files>
             <File>
               <FileName>board.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../src/board/board.c</FilePath>
+              <FilePath>../src/bsp/board.c</FilePath>
             </File>
             <File>
               <FileName>board.h</FileName>
               <FileType>5</FileType>
-              <FilePath>../src/board/board.h</FilePath>
-            </File>
-            <File>
-              <FileName>spi_flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../src/board/flash/spi_flash.c</FilePath>
-            </File>
-            <File>
-              <FileName>rtt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../src/board/rtt/rtt.c</FilePath>
-            </File>
-            <File>
-              <FileName>uart_async.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../src/board/uart/uart_async.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_dac.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../src/board/dac/bsp_dac.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_dac.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>../src/board/dac/bsp_dac.h</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_adc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../src/board/adc/bsp_adc.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_adc.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>../src/board/adc/bsp_adc.h</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_fan.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../src/board/fan/bsp_fan.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_fan.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>../src/board/fan/bsp_fan.h</FilePath>
+              <FilePath>../src/bsp/board.h</FilePath>
             </File>
             <File>
               <FileName>bsp_gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../src/board/gpio/bsp_gpio.c</FilePath>
+              <FilePath>../src/bsp/gpio/bsp_gpio.c</FilePath>
             </File>
             <File>
               <FileName>bsp_gpio.h</FileName>
               <FileType>5</FileType>
-              <FilePath>../src/board/gpio/bsp_gpio.h</FilePath>
+              <FilePath>../src/bsp/gpio/bsp_gpio.h</FilePath>
+            </File>
+            <File>
+              <FileName>rtt.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/bsp/rtt/rtt.c</FilePath>
+            </File>
+            <File>
+              <FileName>sys_log.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/bsp/sys/sys_log.c</FilePath>
+            </File>
+            <File>
+              <FileName>sys_time.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/bsp/sys/sys_time.c</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>Application/User/LoadOut</GroupName>
+          <GroupName>Application/User/Service</GroupName>
           <Files>
             <File>
               <FileName>load_out.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../src/board/load/load_out.c</FilePath>
+              <FilePath>../src/service/load_out/load_out.c</FilePath>
             </File>
             <File>
               <FileName>load_out.h</FileName>
               <FileType>5</FileType>
-              <FilePath>../src/board/load/load_out.h</FilePath>
+              <FilePath>../src/service/load_out/load_out.h</FilePath>
             </File>
             <File>
               <FileName>sense.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../src/board/sense/sense.c</FilePath>
+              <FilePath>../src/service/sense/sense.c</FilePath>
             </File>
             <File>
               <FileName>sense.h</FileName>
               <FileType>5</FileType>
-              <FilePath>../src/board/sense/sense.h</FilePath>
+              <FilePath>../src/service/sense/sense.h</FilePath>
             </File>
             <File>
               <FileName>fan.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../src/board/fan/fan.c</FilePath>
+              <FilePath>../src/service/fan/fan.c</FilePath>
             </File>
             <File>
               <FileName>fan.h</FileName>
               <FileType>5</FileType>
-              <FilePath>../src/board/fan/fan.h</FilePath>
+              <FilePath>../src/service/fan/fan.h</FilePath>
+            </File>
+            <File>
+              <FileName>shell_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/shell/shell_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>lfs_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/service/storage/lfs_port.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/Driver</GroupName>
+          <Files>
+            <File>
+              <FileName>spi_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/driver/flash/spi_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_async.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/driver/uart/uart_async.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_dac.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/driver/dac/bsp_dac.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_dac.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>../src/driver/dac/bsp_dac.h</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/driver/adc/bsp_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_adc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>../src/driver/adc/bsp_adc.h</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_fan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/driver/fan/bsp_fan.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_fan.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>../src/driver/fan/bsp_fan.h</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../src/driver/tim/bsp_timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_timer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>../src/driver/tim/bsp_timer.h</FilePath>
+            </File>
+            <File>
+              <FileName>Arduino.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/driver/tft/Arduino.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Print.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/driver/tft/Print.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>SpiWrapper.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/driver/tft/SpiWrapper.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>tft_fb.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>../src/driver/tft/tft_fb.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -1487,16 +1542,6 @@
               <FileType>1</FileType>
               <FilePath>../src/lib/sfud/port/sfud_port.c</FilePath>
             </File>
-            <File>
-              <FileName>bsp_timer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\board\tim\bsp_timer.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_timer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\src\board\tim\bsp_timer.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -1511,36 +1556,6 @@
               <FileName>lfs_util.c</FileName>
               <FileType>1</FileType>
               <FilePath>../src/lib/lfs/lfs_util.c</FilePath>
-            </File>
-            <File>
-              <FileName>lfs_port.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../src/lib/lfs/lfs_port.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Application/User/TFT_Port</GroupName>
-          <Files>
-            <File>
-              <FileName>Arduino.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>../src/board/tft/Arduino.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>Print.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>../src/board/tft/Print.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>SpiWrapper.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>../src/board/tft/SpiWrapper.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>tft_fb.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>../src/board/tft/tft_fb.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -1696,26 +1711,6 @@
               <FileName>log.c</FileName>
               <FileType>1</FileType>
               <FilePath>../src/lib/shell/log/log.c</FilePath>
-            </File>
-            <File>
-              <FileName>shell_port.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../src/lib/shell/port/shell_port.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Application/User/SYS</GroupName>
-          <Files>
-            <File>
-              <FileName>sys_log.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../src/board/sys/sys_log.c</FilePath>
-            </File>
-            <File>
-              <FileName>sys_time.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../src/board/sys/sys_time.c</FilePath>
             </File>
           </Files>
         </Group>

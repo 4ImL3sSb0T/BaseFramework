@@ -4,8 +4,8 @@
  */
 
 #include "soft_timer.h"
-#include "board/sys/sys_time.h"
-#include "board/sys/sys_log.h"
+#include "bsp/sys/sys_time.h"
+#include "bsp/sys/sys_log.h"
 #include "zf_common_interrupt.h"
 #include <stdio.h>
 #include <string.h>

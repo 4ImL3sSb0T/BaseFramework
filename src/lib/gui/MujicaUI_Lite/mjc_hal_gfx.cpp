@@ -5,7 +5,7 @@
 
 #include "mjc_hal_gfx.h"
 #include "mjc_hal.h"
-#include "tft_fb.h"
+#include "driver/tft/tft_fb.h"
 
 #include <cstdio>
 #include <cstring>

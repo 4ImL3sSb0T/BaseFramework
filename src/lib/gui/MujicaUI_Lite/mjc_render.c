@@ -11,7 +11,7 @@
 
 #include "mjc_hal.h"
 #include "mjc_hal_gfx.h"
-#include "board/sys/sys_log.h"
+#include "bsp/sys/sys_log.h"
 #include "mjc_config.h"
 
 static bool s_render_inited = false;

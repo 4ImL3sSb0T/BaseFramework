@@ -5,7 +5,7 @@
 #include "mjc_define.h"
 #include "zf_driver_gpio.h"
 #include "lib/event/event.h"
-#include "board/sys/sys_log.h"
+#include "bsp/sys/sys_log.h"
 
 #define MJC_BUTTON_ACTIVE_LEVEL 0
 #define MJC_BUTTON_COUNT 4

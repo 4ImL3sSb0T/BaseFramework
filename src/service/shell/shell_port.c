@@ -1,7 +1,7 @@
 #include "shell_port.h"
 #include "lib/shell/shell.h"
 #include "lib/shell/log/log.h"
-#include "board/uart/uart_async.h"
+#include "driver/uart/uart_async.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"

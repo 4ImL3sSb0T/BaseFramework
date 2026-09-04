@@ -1,5 +1,5 @@
 #include "fan.h"
-#include "board/fan/bsp_fan.h"
+#include "driver/fan/bsp_fan.h"
 
 static bool  g_enabled       = false;
 static float g_target_speed  = 0.0f;

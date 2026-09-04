@@ -16,24 +16,31 @@
 ┌─────────────────────────────────────────────────────────┐
 │  app                 这台负载：状态机、模式、任务、UI/CLI │
 ├─────────────────────────────────────────────────────────┤
-│  board               这块板：V/I/℃、DAC、按键、屏、串口   │
+│  service             领域能力：sense / load_out / fan    │
 ├─────────────────────────────────────────────────────────┤
-│  mcu (Core/)         Cube 生成：时钟、外设、HAL、RTOS     │
+│  driver              外设驱动：ADC / DAC / TIM / UART    │
+├─────────────────────────────────────────────────────────┤
+│  bsp                 板级平台：gpio / rtt / sys / board  │
+├─────────────────────────────────────────────────────────┤
+│  Core/HAL            Cube 生成：时钟、外设、HAL、RTOS     │
 └─────────────────────────────────────────────────────────┘
-         依赖只能向下；lib/ 是库，不当一层
+         依赖方向：app → service → driver → bsp → Core/HAL
+         lib/ 是算法与第三方，不当一层
 ```
 
 | 层 | 一句话职责 | 电子负载里放什么 |
 |----|------------|------------------|
 | **app** | 这台负载 | 模式、状态机、控制编排、UI、CLI |
-| **board** | 这块板 | sense / load_out / fan，以及 ADC/DAC 码值 |
-| **mcu** | 这颗芯片 | `MX_*_Init`、中断向量 |
-| **lib** | 库 | PID、shell、lfs、GFX（不当层） |
+| **service** | 领域能力 | sense / load_out / fan / shell / storage |
+| **driver** | 外设驱动 | ADC / DAC / TIM / UART / TFT / flash |
+| **bsp** | 板级平台 | board / gpio / rtt / sys |
+| **lib** | 库 | PID、shell body、lfs body、GFX（不当层） |
 
 判断标准：
 
 - 代码里出现 **「设定电流 / CC 模式 / 故障恢复」** → **app**
-- 代码里出现 **「伏特、安培、这个引脚、ADC 码值」** → **board**
+- 代码里出现 **「伏特、安培」** → **service**
+- 代码里出现 **「这个引脚、ADC 码值」** → **driver / bsp**
 - 代码里出现 `MX_*` / Cube 外设初始化 → **Core/**，不要手写新文件
 
 ---
@@ -170,7 +177,7 @@ ui/cli **不单独建 .h**，入口声明放在 `loader_task.h`。
 ```
 core 输出：float out_norm  ∈ [0, 1]
      ↓
-board/load_out：映射到 DAC / PWM，并处理使能时序
+service/load_out：映射到 DAC / PWM，并处理使能时序
 ```
 
 ### 3.2 单周期伪代码（`loader_core_step`）
@@ -217,7 +224,7 @@ else:
 
 - `sense_get()`：假 V/I（可随假输出变化）  
 - `load_out_set(u)`：只记录 u，可选 `I = f(u)`  
-- 板子来了只换 board/service  
+- 板子来了只换 service/driver  
 
 ---
 

@@ -7,8 +7,8 @@
  */
 
 #include "../inc/sfud.h"
-#include "spi_flash.h"
-#include "rtt.h"
+#include "driver/flash/spi_flash.h"
+#include "bsp/rtt/rtt.h"
 #include "main.h"
 #include "FreeRTOS.h"
 #include "task.h"

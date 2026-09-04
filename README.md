@@ -16,12 +16,14 @@ flowchart LR
 
   subgraph SW[软件栈]
     APP[src/app<br/>这台负载在干什么]
-    BOARD[src/board<br/>这块板能提供什么]
+    SVC[src/service<br/>sense / load_out / fan]
+    DRV[src/driver<br/>ADC DAC TIM UART TFT]
+    BSP[src/bsp<br/>board gpio rtt sys]
     RTOS[FreeRTOS + SEGGER SystemView]
   end
 
   MCU --- TFT & FLASH & SENSE & DAC & FAN
-  APP --> BOARD --> MCU
+  APP --> SVC --> DRV --> BSP --> MCU
   RTOS -.-> APP
 ```
 
@@ -45,12 +47,14 @@ flowchart LR
 手写代码全部在 `src/`。`Core/` 是 CubeMX 生成的 HAL/RTOS 启动，只留入口调用。
 
 ```
-app     这台负载在干什么     →  src/app/
-board   这块板能提供什么     →  src/board/
-mcu     Cube 生成的芯片启动   →  Core/ + Drivers/ + Middlewares/
+app      这台负载在干什么     →  src/app/
+service  领域能力             →  src/service/
+driver   外设驱动             →  src/driver/
+bsp      板级平台             →  src/bsp/
+mcu      Cube 生成的芯片启动   →  Core/ + Drivers/ + Middlewares/
 ```
 
-`src/lib/` 是库（PID、shell、lfs、GFX…），不当一层。
+`src/lib/` 是库（PID、滤波、shell、lfs、GFX…），不当一层。
 
 ```mermaid
 flowchart TB
@@ -60,25 +64,34 @@ flowchart TB
     L3[loader_task · 周期调度]
   end
 
-  subgraph BOARD[board — 板级]
+  subgraph SVC[service — 领域]
     B1[sense / load_out / fan]
-    B2[ADC · DAC · GPIO · UART · TFT]
   end
 
-  subgraph MCU[mcu — Cube 生成]
-    M1[Core HAL · FreeRTOS]
+  subgraph DRV[driver — 外设]
+    B2[ADC · DAC · TIM · UART · TFT]
   end
 
-  APP --> BOARD --> MCU
+  subgraph BSP[bsp — 板级]
+    B3[gpio · rtt · sys · board]
+  end
+
+  subgraph MCU[Core / HAL]
+    M1[Cube HAL · FreeRTOS]
+  end
+
+  APP --> SVC --> DRV --> BSP --> MCU
 ```
 
 | 层 | 一句话 | 放什么 |
 |----|--------|--------|
 | **app** | 这台负载 | 模式、状态机、UI、CLI、任务 |
-| **board** | 这块板 | V/I/℃、DAC 输出、按键、屏、串口 |
-| **mcu** | 这颗芯片 | Cube 时钟/外设/`MX_*_Init` |
+| **service** | 领域能力 | V/I/℃、DAC 映射、风扇、shell、存储 |
+| **driver** | 外设驱动 | ADC、DAC、TIM、UART、TFT、SPI Flash |
+| **bsp** | 板级平台 | board、GPIO、RTT、sys 日志/时间 |
+| **lib** | 库（不当层） | PID、滤波、GFX、shell body、lfs、sfud |
 
-依赖只能向下：`app` → `board` → HAL。`board` / `lib` 不准 include `app/`。
+依赖方向：`app` → `service` → `driver` → `bsp` → Core/HAL。`lib` 不当一层。下层与 lib 不准 include `app/`。
 
 ---
 
@@ -95,7 +108,9 @@ flowchart LR
   ROOT --> Doc[doc/<br/>hardware.md]
 
   Src --> App[app/]
-  Src --> Board[board/]
+  Src --> Svc[service/]
+  Src --> Drv[driver/]
+  Src --> Bsp[bsp/]
   Src --> Lib[lib/]
 ```
 
@@ -107,8 +122,10 @@ BaseFramework/
 ├── MDK-ARM/              ← Keil 工程、启动文件、scatter、编译输出
 ├── src/                  ← 本项目手写代码（CubeMX 不触碰）
 │   ├── app/              ← 产品：状态机 / UI / CLI / 任务
-│   ├── board/            ← 板级：sense load fan ADC DAC UART TFT
-│   └── lib/              ← 库：pid shell lfs sfud gfx gui
+│   ├── service/          ← 领域：sense / load_out / fan / shell / storage
+│   ├── driver/           ← 外设：adc / dac / tim / uart / fan / flash / tft
+│   ├── bsp/              ← 板级：board / gpio / rtt / sys / tft_port
+│   └── lib/              ← 库：pid / filter / event / gfx / st7735 / shell / lfs / sfud
 ├── doc/hardware.md       ← 引脚 / 时钟 / MPU / 内存（权威硬件文档）
 ├── BaseFramework.ioc     ← CubeMX 工程
 └── README.md
@@ -217,8 +234,8 @@ flowchart TB
   RT[loader_runtime<br/>设定 / 测量 / 状态]
   UI[loader_ui]
   CLI[loader_cli]
-  SENSE[board/sense]
-  OUT[board/load]
+  SENSE[service/sense]
+  OUT[service/load_out]
 
   TASK --> CORE
   UI --> RT

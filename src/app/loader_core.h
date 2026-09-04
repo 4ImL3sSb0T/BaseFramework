@@ -3,8 +3,8 @@
 
 /* fsm + mode + control；唯一写执行器 — 见 LOADER_DESIGN.md */
 #include "loader_runtime.h"
-#include "board/sense/sense.h"
-#include "board/load/load_out.h"
+#include "service/sense/sense.h"
+#include "service/load_out/load_out.h"
 #include "lib/tools/common_def.h"
 #include "lib/pid/pid.h"
 

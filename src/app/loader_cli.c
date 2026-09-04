@@ -5,15 +5,15 @@
  * 约定（与 LOADER_DESIGN.md 一致）：
  * - 只改设定 / 调 core 的 request_* API
  * - 读 runtime 测量；不直接写 DAC / HAL
- * - 风扇经 board/fan 调试
+ * - 风扇经 service/fan 调试
  */
 
 #include "loader_task.h"
 #include "loader_core.h"
 #include "loader_runtime.h"
 #include "loader_config.h"
-#include "board/load/load_out.h"
-#include "board/fan/fan.h"
+#include "service/load_out/load_out.h"
+#include "service/fan/fan.h"
 #include "lib/shell/shell.h"
 #include "lib/shell/log/log.h"
 #include "lib/tools/common_def.h"

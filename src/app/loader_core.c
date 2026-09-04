@@ -1,7 +1,7 @@
 #include "loader_core.h"
-#include "board/tim/bsp_timer.h"
-#include "board/load/load_out.h"
-#include "board/fan/fan.h"
+#include "driver/tim/bsp_timer.h"
+#include "service/load_out/load_out.h"
+#include "service/fan/fan.h"
 #include "loader_config.h"
 
 #if LOADER_USE_SOFTWARE_CURRENT_PID

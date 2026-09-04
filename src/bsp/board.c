@@ -1,14 +1,14 @@
-#include "board/board.h"
+#include "bsp/board.h"
 
 #include "spi.h"
-#include "spi_flash.h"
-#include "sys_time.h"
-#include "sys_log.h"
-#include "rtt.h"
-#include "uart_async.h"
-#include "shell_port.h"
+#include "driver/flash/spi_flash.h"
+#include "bsp/sys/sys_time.h"
+#include "bsp/sys/sys_log.h"
+#include "bsp/rtt/rtt.h"
+#include "driver/uart/uart_async.h"
+#include "service/shell/shell_port.h"
 #include "lfs.h"
-#include "lfs_port.h"
+#include "service/storage/lfs_port.h"
 #include "lib/tools/common_def.h"
 
 void board_early_init(void)
