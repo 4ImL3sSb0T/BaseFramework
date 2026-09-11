@@ -1365,7 +1365,7 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Application/User/Bsp</GroupName>
+          <GroupName>Application/User/BSP</GroupName>
           <Files>
             <File>
               <FileName>board.c</FileName>
