@@ -26,7 +26,7 @@ extern "C" {
  * V_ref = I_set * LOAD_OUT_CURRENT_TO_VOLT
  * 按功率级分流/运放增益标定，默认 1.0 即 1A → 1V
  */
-#define LOAD_OUT_CURRENT_TO_VOLT 1.0f
+#define LOAD_OUT_CURRENT_TO_VOLT 0.5f
 
 /**
  * @brief 初始化执行器（启动 DAC，输出 0）
