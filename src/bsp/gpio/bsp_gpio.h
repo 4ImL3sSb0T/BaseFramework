@@ -12,10 +12,10 @@ extern "C" {
 /**
  * UI / 用户按键 ID（与 multi_button button_id 对齐）
  * 硬件：CubeMX 已配置上拉输入，按下为低电平
- *   UI_UP   PD15
+ *   UI_UP   PC8
  *   UI_DOWN PD14
- *   UI_ENT  PD13
- *   UI_BACK PD12
+ *   UI_ENT  PC7
+ *   UI_BACK PC6
  *   USR_KEY PC13
  */
 typedef enum {

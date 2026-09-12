@@ -32,27 +32,31 @@
 
 | 外设 | 实例 | 引脚 | 参数 | 中断/DMA |
 |------|------|------|------|----------|
-| USART1 | TX: PA9, RX: PA10 | 115200-8-N-1, 无流控, FIFO已禁用 | DMA1_Stream1 (RX, Circular), DMA1_Stream2 (TX, Normal), USART1_IRQn (pri=5) |
+| USART1 | TX: PA9, RX: PA10 | 115200-8-N-1, 无流控, FIFO已禁用 | DMA1_Stream1 (RX, Circular), DMA1_Stream0 (TX, Normal), USART1_IRQn (pri=5) |
 | SPI1 | PB3 (SCK), PB5 (MOSI) | Master, **PLL1Q÷2**（Cube `PRESCALER_2`，约 48MHz 量级，以实测稳定为准）, CPOL=0 CPHA=1Edge (Mode0), MSB, 8-bit, 仅发送(1-Line), 软件 NSS；**TX DMA** = DMA1_Stream2 | 外接 ST7735 TFT LCD |
 | SPI2 | PB13 (SCK), PB14 (MISO), PB15 (MOSI), PB12 (CS) | Master, 48 Mbps, CPOL=1 CPHA=1, MSB, 8-bit, 软件 NSS | 外接 SPI Flash，CS 由 PB12 GPIO 控制 |
 | ADC1 | PA6 (INP3), PA7 (INP7), PB1 (INP5) | 12-bit、单端、扫描 **3** 通道、连续转换、软件触发；V/I 采样 64.5 cycles，温度 387.5 cycles；DMA 循环 | DMA2_Stream0 (ADC1, Circular, halfword)；应用层 `bsp_adc` / `sense` |
+| OPAMP1 | PB0 (VINP), PC5 (VINM) | PGA 模式，增益 ×8（`GAIN_8_OR_MINUS_7`），用户 trim + 自校准；输出片内接 ADC2 CH4，无外部输出脚 | 输出内部 → ADC2；应用层 `bsp_adc`（PGA 通道） |
+| ADC2 | OPAMP1 输出（片内）；PC4 为共享模拟脚 | 16-bit、单端、单通道 CH4（OPAMP1_OUT）、连续转换、软件触发；DMA 循环 | DMA2_Stream1 (ADC2, Circular, halfword, pri=5)；应用层 `bsp_adc` `BSP_ADC_PGA2ADC_CH` |
 | DAC1 | PA4 (`LOADER_REF`) | CH1，12-bit，软件触发，输出缓冲关闭，工厂 trim | 电子负载电流/功率级基准；应用层经 `bsp_dac` / `load_out` 驱动 |
-| TIM15 | PE5 (`FUN_PWM` / 风扇) | PWM CH1；Cube PSC=240，ARR 在 `bsp_fan_init` 改为 39（约 25 kHz） | 风扇驱动；`bsp_fan` / `service/fan` |
+| TIM15 | PE5 (`FAN_PWM` / 风扇) | PWM CH1；Cube PSC=240，ARR 在 `bsp_fan_init` 改为 39（约 25 kHz） | 风扇驱动；`bsp_fan` / `service/fan` |
 | TIM17 | 内部 | HAL 时基（1ms） | TIM17_IRQn → HAL_IncTick() |
 | GPIO | PC0 | 红色 LED（推挽输出） | — |
 | GPIO | PC1 | 绿色 LED（推挽输出） | — |
 | GPIO | PC2 | 蓝色 LED（推挽输出） | — |
 | GPIO | PC13 | 用户按键 USR_KEY（上拉输入，按下低） | — |
-| GPIO | PD15 | UI_UP（上拉输入，按下低） | multi_button / loader_ui |
+| GPIO | PC8 | UI_UP（上拉输入，按下低） | multi_button / loader_ui |
 | GPIO | PD14 | UI_DOWN（上拉输入，按下低） | multi_button / loader_ui |
-| GPIO | PD13 | UI_ENT（上拉输入，按下低） | multi_button / loader_ui |
-| GPIO | PD12 | UI_BACK（上拉输入，按下低） | multi_button / loader_ui |
+| GPIO | PC7 | UI_ENT（上拉输入，按下低） | multi_button / loader_ui |
+| GPIO | PC6 | UI_BACK（上拉输入，按下低） | multi_button / loader_ui |
 | GPIO | PB4 | TFT DC（推挽输出） | ST7735 数据/命令选择 |
 | GPIO | PB6 | TFT CS（推挽输出） | ST7735 片选 |
 | GPIO | PB7 | TFT RST（推挽输出） | ST7735 复位 |
+| DMA | DMA1_Stream0 | USART1_TX（内存→外设，普通模式） | NVIC pri=5 |
 | DMA | DMA1_Stream1 | USART1_RX（外设→内存，循环模式） | NVIC pri=5 |
-| DMA | DMA1_Stream2 | USART1_TX（内存→外设，普通模式） | NVIC pri=5 |
+| DMA | DMA1_Stream2 | SPI1_TX（内存→外设，普通模式，FIFO 使能） | NVIC pri=5 |
 | DMA | DMA2_Stream0 | ADC1（外设→内存，循环模式，半字） | NVIC pri=0 |
+| DMA | DMA2_Stream1 | ADC2（外设→内存，循环模式，半字） | NVIC pri=5 |
 
 ## 引脚总表
 
@@ -63,7 +67,10 @@
 | PA6 | ADC1_INP3 / `Voltage_CH` | 模拟输入 | 电压采样通道（Rank1） |
 | PA7 | ADC1_INP7 / `Current_CH` | 模拟输入 | 电流采样通道（Rank2） |
 | PB1 | ADC1_INP5 / `LOADER_TEMP` | 模拟输入 | 负载温度采样（Rank3） |
-| PE5 | TIM15_CH1 / `FUN_PWM` | AF4 PWM | 风扇 PWM 输出 |
+| PB0 | OPAMP1_VINP | 模拟输入 | PGA 路径正输入（IO0） |
+| PC5 | OPAMP1_VINM | 模拟输入 | PGA 反相节点（INVERTINGINPUT_IO0） |
+| PC4 | ADC2_INP4 / OPAMP1_VOUT（共享） | 模拟 | OPAMP1 输出片内接 ADC2；PC4 为共享模拟脚 |
+| PE5 | TIM15_CH1 / `FAN_PWM` | AF4 PWM | 风扇 PWM 输出 |
 | PA9 | USART1_TX | AF7 (推挽) | UART 发送 |
 | PA10 | USART1_RX | AF7 (推挽) | UART 接收 |
 | PB3 | SPI1_SCK | AF5 (推挽) | ST7735 TFT 时钟 |
@@ -75,10 +82,10 @@
 | PC1 | GPIO_Output | 推挽 | 绿色 LED |
 | PC2 | GPIO_Output | 推挽 | 蓝色 LED |
 | PC13 | GPIO_Input | 上拉 | 用户按键 USR_KEY（按下低） |
-| PD12 | GPIO_Input | 上拉 | UI_BACK（按下低） |
-| PD13 | GPIO_Input | 上拉 | UI_ENT（按下低） |
+| PC6 | GPIO_Input | 上拉 | UI_BACK（按下低） |
+| PC7 | GPIO_Input | 上拉 | UI_ENT（按下低） |
+| PC8 | GPIO_Input | 上拉 | UI_UP（按下低） |
 | PD14 | GPIO_Input | 上拉 | UI_DOWN（按下低） |
-| PD15 | GPIO_Input | 上拉 | UI_UP（按下低） |
 | PB12 | GPIO_Output | 推挽 | SPI Flash CS |
 | PB13 | SPI2_SCK | AF5 (推挽) | SPI Flash 时钟 |
 | PB14 | SPI2_MISO | AF5 (推挽) | SPI Flash 数据输入 |
@@ -117,7 +124,7 @@
 | 内部 Flash | `0x08000000` | 128 KB | **仅 Bootloader**，本工程不链接 | — |
 | DTCM | `0x20000000` | 128 KB | FreeRTOS heap 112KB + 主栈 16KB | 不走 D-Cache；**DMA 不可访问** |
 | AXI SRAM | `0x24000000` | 512 KB | `.data` / `.bss` | 可 Cache |
-| D2 SRAM1 | `0x30000000` | 64 KB | `.dma_buf`（USART1 / ADC1 等 DMA） | MPU Region1 不可 Cache |
+| D2 SRAM1 | `0x30000000` | 64 KB | `.dma_buf`（USART1 / ADC1 / ADC2 等 DMA） | MPU Region1 不可 Cache |
 
 **DTCM 内部（低→高，必须拆成两个 execution region）**
 
@@ -192,12 +199,47 @@ CubeMX 已生成 `MX_DAC1_Init()`；应用层启动与码值写入见 `src/drive
 2. DMA 缓冲必须 `.dma_buf`（D-Cache 开启）。
 3. V/I：`Vphys = (raw/4095)*3.3 * FACTOR`，系数在 `sense.h`。
 
+## OPAMP1 + ADC2（PGA 放大采样路径）
+
+OPAMP1 做 PGA 放大，输出**片内直连 ADC2**（无外部输出脚），用于小信号放大采样；应用层通道 `BSP_ADC_PGA2ADC_CH`，换算系数待标定（`sense.c`：「标定后补」）。
+
+### OPAMP1
+
+| 参数 | 值 |
+|------|-----|
+| 模式 | PGA（`OPAMP_PGA_MODE`），正常功耗 |
+| 增益 | ×8（`OPAMP_PGA_GAIN_8_OR_MINUS_7`） |
+| VINP | PB0（IO0） |
+| 反相节点 | 接 IO0（PC5 引脚，可外接滤波电容） |
+| Trim | 用户 trim（`OPAMP_TRIMMING_USER`）+ 上电自校准（`HAL_OPAMP_SelfCalibrate`，在 `bsp_adc_init` 内） |
+| 输出 | 片内 → ADC2 通道 4（`VP_ADC2_OPAMP1_OUT`），不引出引脚 |
+
+### ADC2
+
+| 参数 | 值 |
+|------|-----|
+| 实例 | ADC2，独立模式 |
+| 分辨率 | **16-bit**（满量程 raw 0..65535，`BSP_ADC2_MAX_RAW`） |
+| 输入 | 单端，单通道 `ADC_CHANNEL_4`（OPAMP1 输出），`NbrOfConversion=1` |
+| 连续转换 | 使能，软件触发 |
+| 数据路径 | `ADC_CONVERSIONDATA_DMA_CIRCULAR` |
+| 时钟 | 同 ADC1：PLL2P / `ADC_CLOCK_ASYNC_DIV4` ≈ 20MHz |
+| DMA | DMA2_Stream1，`DMA_REQUEST_ADC2`，循环、半字，NVIC pri=5 |
+| 应用缓冲 | `adc_pga_buffer[1]` 于 `.dma_buf` |
+| PC4 | 共享模拟脚（`ADC2_INP4` / `OPAMP1_VOUT` 引出选项），当前仅配置为模拟输入 |
+
+**使用注意**
+
+1. `bsp_adc_init()` 顺序：OPAMP 自校准 → OPAMP Start → ADC1/ADC2 偏移校准 → 两路 `HAL_ADC_Start_DMA`。
+2. 读值：`bsp_adc_get_raw_value(BSP_ADC_PGA2ADC_CH)`。
+3. PGA 路径标定系数未定，`sense` 暂不输出该通道物理量。
+
 ## TIM15（风扇 PWM）
 
 | 参数 | 值 |
 |------|-----|
 | 实例 | TIM15 CH1 |
-| 引脚 | PE5（Cube 标签 `FUN_PWM`） |
+| 引脚 | PE5（Cube 标签 `FAN_PWM`） |
 | Cube PSC | 240 |
 | 应用 ARR | `bsp_fan_init` 设为 39 → 约 **25 kHz** |
 | 占空比 | `bsp_fan_set_duty(0..1)` / `fan_set_speed` / `fan_set_percent` |

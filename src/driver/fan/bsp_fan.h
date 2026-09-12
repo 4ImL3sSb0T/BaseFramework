@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 /**
- * 风扇 PWM：TIM15 CH1 → PE5（Cube 标签 FUN_PWM）
+ * 风扇 PWM：TIM15 CH1 → PE5（Cube 标签 FAN_PWM）
  * Cube 默认 ARR=65535 频率过低，init 时改为约 25 kHz 的 ARR。
  */
 

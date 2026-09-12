@@ -3,7 +3,7 @@
  * @brief 电子负载 TFT UI（深色仪表盘）— 见 LOADER_UI.md
  *
  * 数据：loader_runtime（测量只读，设定走 runtime 写口 + core request）
- * 输入：multi_button + bsp_gpio（PD15/14/13/12 = UP/DOWN/ENT/BACK）
+ * 输入：multi_button + bsp_gpio（PC8/PD14/PC7/PC6 = UP/DOWN/ENT/BACK）
  */
 
 #include "loader_task.h"
@@ -753,7 +753,7 @@ static void ui_draw_about(void)
     ui_text(4, 30, 1, UI_COL_CYAN, UI_COL_BG, "BaseFramework H750");
     ui_text(4, 44, 1, UI_COL_DIM, UI_COL_BG, "Range  5.0A / ~50W");
     ui_text(4, 56, 1, UI_COL_DIM, UI_COL_BG, "UI     v0.2 runtime");
-    ui_text(4, 68, 1, UI_COL_DIM, UI_COL_BG, "Keys   PD15/14/13/12");
+    ui_text(4, 68, 1, UI_COL_DIM, UI_COL_BG, "Keys   PC8/14/7/6");
     ui_text(4, 80, 1, UI_COL_DIM, UI_COL_BG, "TFT    ST7735 160x128");
     ui_text(4, 98, 1, UI_COL_GREEN, UI_COL_BG, "Runtime linked");
     ui_draw_tab_bar(UI_PAGE_ABOUT);
