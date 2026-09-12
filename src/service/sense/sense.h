@@ -18,9 +18,9 @@ extern "C" {
 /** ADC1 12-bit 满量程 */
 #define SENSE_ADC1_RESOLUTION       4095.0f
 
-#define SENSE_VOLTAGE_FACTOR        0.05f   /* 按分压/前端增益标定 */
+#define SENSE_VOLTAGE_FACTOR        11.2619f   /* 按分压/前端增益标定 */
 #define SENSE_CURRENT_FACTOR        2.0f    /* 按分流/运放增益标定 */
-
+//4.730 0.42
 /**
  * 温度标定：T(°C) = ADC_raw * SENSE_TEMP_FACTOR
  * 按传感器/分压实测改此系数即可，无需再除满量程。
