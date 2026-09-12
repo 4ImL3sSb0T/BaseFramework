@@ -16,7 +16,7 @@ exit_code_t sense_init(sense_mode_t mode)
 
 float sense_get_voltage(void)
 {
-    uint16_t raw = bsp_adc_get_raw_value(BSP_ADC_VOLTAGE_CH);
+     uint16_t raw = bsp_adc_get_raw_value(BSP_ADC_VOLTAGE_CH);
     return sense_adc1_to_volt(raw) * SENSE_VOLTAGE_FACTOR;
 }
 

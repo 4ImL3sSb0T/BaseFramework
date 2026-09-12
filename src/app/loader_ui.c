@@ -803,9 +803,9 @@ static void ui_handle_key(ui_key_t key)
     case UI_PAGE_HOME:
         /* 短按 / 长按均可翻页（长按不连发，避免连跳） */
         if (key == UI_KEY_UP || key == UI_KEY_UP_LONG) {
-            ui_page_delta(+1);
-        } else if (key == UI_KEY_DOWN || key == UI_KEY_DOWN_LONG) {
             ui_page_delta(-1);
+        } else if (key == UI_KEY_DOWN || key == UI_KEY_DOWN_LONG) {
+            ui_page_delta(+1);
         } else if (key == UI_KEY_ENT) {
             ui_toggle_output();
         }
@@ -837,9 +837,9 @@ static void ui_handle_key(ui_key_t key)
         /* 非编辑：长按上下切页签 */
         if (is_long) {
             if (key == UI_KEY_UP_LONG) {
-                ui_page_delta(+1);
-            } else {
                 ui_page_delta(-1);
+            } else {
+                ui_page_delta(+1);
             }
             break;
         }
@@ -881,9 +881,9 @@ static void ui_handle_key(ui_key_t key)
         } else if (key == UI_KEY_BACK) {
             ui_page_set(UI_PAGE_HOME);
         } else if (key == UI_KEY_UP || key == UI_KEY_UP_LONG) {
-            ui_page_delta(+1);
-        } else if (key == UI_KEY_DOWN || key == UI_KEY_DOWN_LONG) {
             ui_page_delta(-1);
+        } else if (key == UI_KEY_DOWN || key == UI_KEY_DOWN_LONG) {
+            ui_page_delta(+1);
         }
         break;
 
@@ -891,9 +891,9 @@ static void ui_handle_key(ui_key_t key)
         /* 长按上下切页；短按切 I/P */
         if (is_long) {
             if (key == UI_KEY_UP_LONG) {
-                ui_page_delta(+1);
-            } else {
                 ui_page_delta(-1);
+            } else {
+                ui_page_delta(+1);
             }
         } else if (key == UI_KEY_UP || key == UI_KEY_DOWN) {
             s_chart.show_power = !s_chart.show_power;
@@ -910,9 +910,9 @@ static void ui_handle_key(ui_key_t key)
         if (key == UI_KEY_BACK || key == UI_KEY_ENT) {
             ui_page_set(UI_PAGE_HOME);
         } else if (key == UI_KEY_UP || key == UI_KEY_UP_LONG) {
-            ui_page_delta(+1);
-        } else if (key == UI_KEY_DOWN || key == UI_KEY_DOWN_LONG) {
             ui_page_delta(-1);
+        } else if (key == UI_KEY_DOWN || key == UI_KEY_DOWN_LONG) {
+            ui_page_delta(+1);
         }
         break;
 
