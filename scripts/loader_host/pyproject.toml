@@ -1,0 +1,49 @@
+[project]
+name = "loader-host"
+version = "0.1.0"
+description = "PC host application (GUI) for the STM32H750 electronic-load firmware over USART1"
+requires-python = ">=3.11"
+dependencies = [
+    "pyserial>=3.5",
+    "PySide6>=6.7",
+    "pyqtgraph>=0.13.7",
+]
+
+[project.scripts]
+loader-host = "loader_host.app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["loader_host"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# UP031: the simulator deliberately uses %-formatting to mirror the firmware's
+#        printf specifiers in loader_cli.c, so the strings can be diffed against
+#        the C source. Rewriting them as f-strings would destroy that mapping.
+# BLE001: the serial/GUI boundary catches broad exceptions on purpose -- a
+#        vendor driver raising an unexpected type must not kill the worker
+#        thread, and the simulator maps any internal failure to EXIT_FAIL.
+ignore = ["UP031"]
+
+[tool.ruff.lint.per-file-ignores]
+"loader_host/transport.py" = ["BLE001"]
+"loader_host/client.py" = ["BLE001"]
+"loader_host/demux.py" = ["BLE001"]
+"loader_host/main_window.py" = ["BLE001"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
