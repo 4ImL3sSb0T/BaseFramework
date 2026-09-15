@@ -3,6 +3,7 @@
 Usage:
     uv run loader-host                 # pick a port in the GUI
     uv run loader-host --sim           # built-in simulator, no hardware
+    uv run loader-host --theme dark    # force a theme (default light, persisted)
     uv run loader-host -p COM7         # connect to a real port
     uv run loader-host -p COM7 -b 115200
 """
@@ -39,6 +40,12 @@ def build_argparser() -> argparse.ArgumentParser:
         help="start with the built-in device simulator instead of a serial port",
     )
     parser.add_argument(
+        "--theme",
+        choices=("light", "dark"),
+        default=None,
+        help="UI theme (default light; the in-app toggle persists the choice)",
+    )
+    parser.add_argument(
         "--list-ports",
         action="store_true",
         help="print detected serial ports and exit",
@@ -60,6 +67,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     # Imported after arg parsing so --list-ports works without a display.
+    from PySide6.QtCore import QSettings
     from PySide6.QtWidgets import QApplication
 
     from . import theme
@@ -69,8 +77,11 @@ def main(argv: list[str] | None = None) -> int:
     app.setApplicationName("loader-host")
     app.setOrganizationName("BaseFramework")
 
-    theme.configure_pyqtgraph()
-    theme.apply_to_app(app)
+    # CLI wins; otherwise the last toggle from QSettings; default light.
+    theme_name = args.theme or QSettings("BaseFramework", "loader_host").value(
+        "theme", "light"
+    )
+    theme.apply(app, theme_name)
 
     window = MainWindow(start_sim=args.sim, port=args.port, baudrate=args.baudrate)
     window.show()

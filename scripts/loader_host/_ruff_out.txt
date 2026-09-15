@@ -1,0 +1,111 @@
+   Building loader-host @ file:///C:/Users/yuang/Projects/H750/BaseFramework/scripts/loader_host
+      Built loader-host @ file:///C:/Users/yuang/Projects/H750/BaseFramework/scripts/loader_host
+Uninstalled 1 package in 1.01s
+Installed 1 package in 304ms
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+ --> _shot_theme.py:7:45
+  |
+5 | os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+6 |
+7 | from PySide6.QtWidgets import QApplication  # noqa: E402
+  |                                             ^^^^^^^^^^^^
+8 |
+9 | from loader_host import theme  # noqa: E402
+  |
+help: Remove unused `noqa` directive
+  |
+6 |
+  - from PySide6.QtWidgets import QApplication  # noqa: E402
+7 + from PySide6.QtWidgets import QApplication
+8 |
+  |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> _shot_theme.py:9:32
+   |
+ 7 | from PySide6.QtWidgets import QApplication  # noqa: E402
+ 8 |
+ 9 | from loader_host import theme  # noqa: E402
+   |                                ^^^^^^^^^^^^
+10 | from loader_host.main_window import MainWindow  # noqa: E402
+   |
+help: Remove unused `noqa` directive
+   |
+8  |
+   - from loader_host import theme  # noqa: E402
+9  + from loader_host import theme
+10 | from loader_host.main_window import MainWindow  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> _shot_theme.py:10:49
+   |
+ 9 | from loader_host import theme  # noqa: E402
+10 | from loader_host.main_window import MainWindow  # noqa: E402
+   |                                                 ^^^^^^^^^^^^
+11 |
+12 | app = QApplication([])
+   |
+help: Remove unused `noqa` directive
+   |
+9  | from loader_host import theme  # noqa: E402
+   - from loader_host.main_window import MainWindow  # noqa: E402
+10 + from loader_host.main_window import MainWindow
+11 |
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+ --> _smoke_theme.py:7:45
+  |
+5 | os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+6 |
+7 | from PySide6.QtWidgets import QApplication  # noqa: E402
+  |                                             ^^^^^^^^^^^^
+8 |
+9 | from loader_host import theme  # noqa: E402
+  |
+help: Remove unused `noqa` directive
+  |
+6 |
+  - from PySide6.QtWidgets import QApplication  # noqa: E402
+7 + from PySide6.QtWidgets import QApplication
+8 |
+  |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> _smoke_theme.py:9:32
+   |
+ 7 | from PySide6.QtWidgets import QApplication  # noqa: E402
+ 8 |
+ 9 | from loader_host import theme  # noqa: E402
+   |                                ^^^^^^^^^^^^
+10 | from loader_host.main_window import MainWindow  # noqa: E402
+   |
+help: Remove unused `noqa` directive
+   |
+8  |
+   - from loader_host import theme  # noqa: E402
+9  + from loader_host import theme
+10 | from loader_host.main_window import MainWindow  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> _smoke_theme.py:10:49
+   |
+ 9 | from loader_host import theme  # noqa: E402
+10 | from loader_host.main_window import MainWindow  # noqa: E402
+   |                                                 ^^^^^^^^^^^^
+11 |
+12 | app = QApplication([])
+   |
+help: Remove unused `noqa` directive
+   |
+9  | from loader_host import theme  # noqa: E402
+   - from loader_host.main_window import MainWindow  # noqa: E402
+10 + from loader_host.main_window import MainWindow
+11 |
+   |
+
+Found 6 errors.
+[*] 6 fixable with the `--fix` option.
+EXIT=1

@@ -26,6 +26,30 @@ from . import config, theme
 from .model import LoaderSnapshot
 
 # ---------------------------------------------------------------------------
+# Card container
+# ---------------------------------------------------------------------------
+
+
+class Card(QFrame):
+    """Flat card container with an uppercase section title.
+
+    Replaces QGroupBox for a cleaner, more modern look: no notched border,
+    just a rounded panel with a small muted title inside. Add content to the
+    exposed ``body`` layout.
+    """
+
+    def __init__(self, title: str, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setObjectName("Card")
+        self.body = QVBoxLayout(self)
+        self.body.setContentsMargins(14, 12, 14, 14)
+        self.body.setSpacing(10)
+        label = QLabel(title.upper())
+        label.setObjectName("CardTitle")
+        self.body.addWidget(label)
+
+
+# ---------------------------------------------------------------------------
 # Readout card
 # ---------------------------------------------------------------------------
 
@@ -49,29 +73,23 @@ class ReadoutCard(QFrame):
     ) -> None:
         super().__init__(parent)
         self.setObjectName("Readout")
-        self.setMinimumWidth(110)
-        # Channel identity lives in a thin left accent bar + the label colour,
-        # so the value itself stays free to signal alarms.
-        self.setStyleSheet(
-            f"QFrame#Readout {{ background: {theme.BG_ELEV};"
-            f" border: 1px solid {theme.BORDER}; border-left: 3px solid {color};"
-            " border-radius: 8px; }"
-        )
+        self.setMinimumWidth(120)
+        self.setMinimumHeight(96)
         self._decimals = decimals
         self._accent = color
         self._unit = unit
         self._warn_high: float | None = None
         self._warn_ratio = 0.9
+        self._last_value: float | None = None
+        self._last_sub = ""
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 8, 10, 8)
-        layout.setSpacing(2)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setSpacing(3)
 
         self._label = QLabel(label.upper())
         self._label.setObjectName("ReadoutLabel")
-        self._label.setStyleSheet(
-            f"color: {color}; font-size: 10px; font-weight: 600; letter-spacing: 1.2px;"
-        )
+        self._apply_accent(color)
 
         value_row = QHBoxLayout()
         value_row.setSpacing(4)
@@ -92,12 +110,32 @@ class ReadoutCard(QFrame):
         layout.addLayout(value_row)
         layout.addWidget(self._sub)
 
+    def _apply_accent(self, color: str) -> None:
+        """Channel identity lives in a top accent bar + the label colour, so
+        the value itself stays free to signal alarms."""
+        self.setStyleSheet(
+            f"QFrame#Readout {{ background: {theme.BG_ELEV};"
+            f" border: 1px solid {theme.BORDER}; border-top: 3px solid {color};"
+            " border-radius: 10px; }"
+        )
+        self._label.setStyleSheet(
+            f"color: {color}; font-size: 10px; font-weight: 600; letter-spacing: 1.2px;"
+        )
+
+    def restyle(self, color: str) -> None:
+        """Re-apply theme colours after a palette swap (new channel colour)."""
+        self._accent = color
+        self._apply_accent(color)
+        self.set_value(self._last_value, self._last_sub)
+
     def set_warn_high(self, limit: float, ratio: float = 0.9) -> None:
         """Turn the value amber/red as it approaches *limit*."""
         self._warn_high = limit
         self._warn_ratio = ratio
 
     def set_value(self, value: float | None, sub: str = "") -> None:
+        self._last_value = value
+        self._last_sub = sub
         if value is None:
             self._value.setText("—")
             self._value.setStyleSheet(f"color: {theme.FG_DIM};")
@@ -129,7 +167,7 @@ class StatusBanner(QLabel):
         # The fault detail line is long; wrap rather than truncate, since a
         # cut-off "输出已…" would hide which protection tripped.
         self.setWordWrap(True)
-        self._set_style(theme.IDLE, "#0b0f14", "OFFLINE")
+        self._set_style(theme.IDLE, theme.BANNER_BG, "OFFLINE")
 
     def _set_style(self, fg: str, bg: str, text: str) -> None:
         self.setStyleSheet(
@@ -154,7 +192,7 @@ class StatusBanner(QLabel):
                 "OTP": "过温保护已触发 — 输出已关断",
                 "UVP": "欠压",
             }.get(err, "故障")
-            self._set_style(theme.DANGER, "#2a1210", f"● ERROR · {err} · {detail}")
+            self._set_style(theme.DANGER, theme.BANNER_ERR_BG, f"● ERROR · {err} · {detail}")
             return
 
         text = f"● {name}"
@@ -208,13 +246,7 @@ class TrendChart(QWidget):
 
         # -- plot
         self._plot = pg.PlotWidget()
-        self._plot.setBackground(theme.BG_INPUT)
-        self._plot.showGrid(x=True, y=True, alpha=0.12)
         self._plot.setLabel("bottom", "时间", units="s")
-        self._plot.getAxis("bottom").setPen(theme.BORDER)
-        self._plot.getAxis("left").setPen(theme.BORDER)
-        self._plot.getAxis("bottom").setTextPen(theme.FG_MUTED)
-        self._plot.getAxis("left").setTextPen(theme.FG_MUTED)
         self._plot.setMouseEnabled(x=True, y=True)
         self._plot.setMenuEnabled(False)
 
@@ -235,7 +267,22 @@ class TrendChart(QWidget):
         self._plot.addItem(self._vline, ignoreBounds=True)
         self._plot.scene().sigMouseMoved.connect(self._on_mouse_move)
 
+        self.restyle()
         layout.addWidget(self._plot, 1)
+
+    def restyle(self) -> None:
+        """Re-apply theme colours after a palette swap."""
+        self._plot.setBackground(theme.BG_INPUT)
+        self._plot.showGrid(x=True, y=True, alpha=theme.GRID_ALPHA)
+        for axis in ("bottom", "left"):
+            self._plot.getAxis(axis).setPen(theme.BORDER)
+            self._plot.getAxis(axis).setTextPen(theme.FG_MUTED)
+        for ch in self.CHANNELS:
+            self._curves[ch].setPen(pg.mkPen(theme.CH_COLOR[ch], width=2))
+            self._checks[ch].setStyleSheet(
+                f"color: {theme.CH_COLOR[ch]}; font-size: 11px;"
+            )
+        self._vline.setPen(pg.mkPen(theme.FG_DIM, style=Qt.DashLine))
 
     def _toggle(self, channel: str, on: bool) -> None:
         self._visible[channel] = on
@@ -407,4 +454,4 @@ class ValueRow(QWidget):
         self._value.setStyleSheet(f"color: {color};" if color else "")
 
 
-__all__ = ["ReadoutCard", "StatusBanner", "TerminalPanel", "TrendChart", "ValueRow"]
+__all__ = ["Card", "ReadoutCard", "StatusBanner", "TerminalPanel", "TrendChart", "ValueRow"]

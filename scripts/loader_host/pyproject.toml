@@ -39,6 +39,11 @@ target-version = "py311"
 ignore = ["UP031"]
 
 [tool.ruff.lint.per-file-ignores]
+# F821/F822: theme tokens (BG, FG, ACCENT, ...) are injected into module
+#            globals by set_theme() from the _DARK/_LIGHT palettes, so static
+#            analysis cannot see them. The stylesheet f-string reads them at
+#            call time, which is exactly what makes runtime re-theming work.
+"loader_host/theme.py" = ["F821", "F822"]
 "loader_host/transport.py" = ["BLE001"]
 "loader_host/client.py" = ["BLE001"]
 "loader_host/demux.py" = ["BLE001"]

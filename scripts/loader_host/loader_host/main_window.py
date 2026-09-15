@@ -14,6 +14,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QSettings, Qt, Slot
 from PySide6.QtWidgets import (
+    QApplication,
     QButtonGroup,
     QCheckBox,
     QComboBox,
@@ -21,7 +22,6 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QFrame,
     QGridLayout,
-    QGroupBox,
     QHBoxLayout,
     QLabel,
     QMainWindow,
@@ -37,7 +37,7 @@ from PySide6.QtWidgets import (
 from . import config, theme
 from .client import HostClient, PollConfig, list_serial_ports
 from .model import CommandResult, LoaderSnapshot
-from .panels import ReadoutCard, StatusBanner, TerminalPanel, TrendChart, ValueRow
+from .panels import Card, ReadoutCard, StatusBanner, TerminalPanel, TrendChart, ValueRow
 from .recorder import CsvRecorder, load_csv
 
 SIM_PORT = "__sim__"
@@ -62,6 +62,7 @@ class MainWindow(QMainWindow):
         self._recorder: CsvRecorder | None = None
         self._connected = False
         self._last_result_ok: bool | None = None
+        self._link_desc = ""
 
         self._build_ui()
         self._wire()
@@ -96,6 +97,8 @@ class MainWindow(QMainWindow):
         centre_layout = QVBoxLayout(centre)
         centre_layout.setContentsMargins(0, 0, 0, 0)
         centre_layout.setSpacing(12)
+        self._banner = StatusBanner()
+        centre_layout.addWidget(self._banner)
         centre_layout.addWidget(self._build_readouts())
         centre_layout.addWidget(self._build_chart(), 1)
         body_layout.addWidget(centre, 1)
@@ -122,12 +125,12 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(12, 8, 12, 8)
         layout.setSpacing(8)
 
-        title = QLabel("LOADER HOST")
-        title.setObjectName("SectionLabel")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; letter-spacing: 2px;")
-        layout.addWidget(title)
+        self._title_label = QLabel("LOADER HOST")
+        self._title_label.setObjectName("SectionLabel")
+        self._apply_title_style()
+        layout.addWidget(self._title_label)
 
-        layout.addSpacing(8)
+        layout.addSpacing(16)
 
         layout.addWidget(self._muted_label("端口"))
         self._port_combo = QComboBox()
@@ -155,11 +158,36 @@ class MainWindow(QMainWindow):
 
         layout.addStretch(1)
 
-        self._link_label = QLabel("未连接")
-        self._link_label.setObjectName("Hint")
-        layout.addWidget(self._link_label)
+        self._theme_btn = QPushButton()
+        self._theme_btn.setToolTip("切换浅色 / 深色主题")
+        self._theme_btn.clicked.connect(self._on_theme_toggled)
+        layout.addWidget(self._theme_btn)
+        self._update_theme_btn()
+
+        self._link_chip = QLabel()
+        self._set_link_chip(False, "")
+        layout.addWidget(self._link_chip)
 
         return bar
+
+    def _apply_title_style(self) -> None:
+        self._title_label.setStyleSheet(
+            f"color: {theme.ACCENT}; font-size: 13px; font-weight: 700; letter-spacing: 2px;"
+        )
+
+    def _set_link_chip(self, connected: bool, description: str) -> None:
+        """Connection status pill on the right of the toolbar."""
+        self._link_desc = description
+        if connected:
+            dot, text = theme.OK, description
+        else:
+            dot, text = theme.FG_DIM, "未连接"
+        self._link_chip.setText(f"●  {text}")
+        self._link_chip.setStyleSheet(
+            f"color: {dot}; background: {theme.BG_ELEV};"
+            f" border: 1px solid {theme.BORDER}; border-radius: 12px;"
+            " padding: 4px 14px; font-weight: 600; font-size: 12px;"
+        )
 
     def _muted_label(self, text: str) -> QLabel:
         label = QLabel(text)
@@ -169,10 +197,11 @@ class MainWindow(QMainWindow):
     # -- readouts ---------------------------------------------------------
 
     def _build_readouts(self) -> QWidget:
-        card = QFrame()
-        card.setObjectName("Card")
-        layout = QHBoxLayout(card)
-        layout.setContentsMargins(10, 10, 10, 10)
+        # Each ReadoutCard is already a styled card, so the row itself is a
+        # plain transparent container.
+        row_widget = QWidget()
+        layout = QHBoxLayout(row_widget)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
 
         self._read_voltage = ReadoutCard("电压", "V", theme.CH_COLOR["voltage"], 3)
@@ -195,22 +224,21 @@ class MainWindow(QMainWindow):
         ):
             layout.addWidget(widget, 1)
 
-        return card
+        return row_widget
 
     def _build_chart(self) -> QWidget:
-        box = QGroupBox("实时曲线")
-        layout = QVBoxLayout(box)
-        layout.setContentsMargins(8, 4, 8, 8)
+        card = Card("实时曲线")
+        card.body.setContentsMargins(12, 10, 12, 12)
         self._chart = TrendChart(window_s=60.0)
-        layout.addWidget(self._chart)
-        return box
+        card.body.addWidget(self._chart, 1)
+        return card
 
     # -- left column: control ---------------------------------------------
 
     def _build_left_column(self) -> QWidget:
         # The control stack is taller than the window at small heights, so it
-        # gets its own scroll area; without one Qt compresses the QGroupBoxes
-        # into each other and the contents overlap.
+        # gets its own scroll area; without one Qt compresses the cards into
+        # each other and the contents overlap.
         from PySide6.QtWidgets import QScrollArea
 
         inner = QWidget()
@@ -218,11 +246,10 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 6, 0)
         layout.setSpacing(12)
 
-        layout.addWidget(self._build_mode_box())
-        layout.addWidget(self._build_setpoint_box())
-        layout.addWidget(self._build_action_box())
-        layout.addWidget(self._build_fan_box())
-        layout.addWidget(self._build_record_box())
+        layout.addWidget(self._build_control_card())
+        layout.addWidget(self._build_output_card())
+        layout.addWidget(self._build_fan_card())
+        layout.addWidget(self._build_record_card())
         layout.addStretch(1)
 
         scroll = QScrollArea()
@@ -230,17 +257,18 @@ class MainWindow(QMainWindow):
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setFixedWidth(288)
+        scroll.setFixedWidth(300)
         scroll.setStyleSheet("QScrollArea { background: transparent; }")
         return scroll
 
-    def _build_mode_box(self) -> QWidget:
-        box = QGroupBox("工作模式")
-        layout = QVBoxLayout(box)
-        layout.setSpacing(8)
+    def _build_control_card(self) -> QWidget:
+        """Mode selector + setpoint in one card (they only make sense together)."""
+        card = Card("控制")
+        body = card.body
 
-        row = QHBoxLayout()
-        row.setSpacing(6)
+        # -- mode segmented buttons
+        mode_row = QHBoxLayout()
+        mode_row.setSpacing(6)
         self._mode_group = QButtonGroup(self)
         self._mode_buttons: dict[config.LoaderMode, QPushButton] = {}
         for mode in (
@@ -255,23 +283,22 @@ class MainWindow(QMainWindow):
             button.clicked.connect(lambda _=False, m=mode: self._on_mode_clicked(m))
             self._mode_group.addButton(button)
             self._mode_buttons[mode] = button
-            row.addWidget(button)
-        layout.addLayout(row)
+            mode_row.addWidget(button)
+        body.addLayout(mode_row)
 
         caption = QLabel("CC 恒流 · CV 恒压 · CP 恒功率 · CR 恒阻")
         caption.setObjectName("Hint")
         caption.setWordWrap(True)
-        layout.addWidget(caption)
-        return box
+        body.addWidget(caption)
 
-    def _build_setpoint_box(self) -> QWidget:
-        box = QGroupBox("设定值")
-        layout = QVBoxLayout(box)
-        layout.setSpacing(8)
+        divider = QFrame()
+        divider.setObjectName("Divider")
+        body.addWidget(divider)
 
+        # -- setpoint
         self._setpoint_label = QLabel("—")
         self._setpoint_label.setObjectName("FieldLabel")
-        layout.addWidget(self._setpoint_label)
+        body.addWidget(self._setpoint_label)
 
         row = QHBoxLayout()
         row.setSpacing(6)
@@ -287,27 +314,24 @@ class MainWindow(QMainWindow):
         self._setpoint_unit.setMinimumWidth(30)
         row.addWidget(self._setpoint_unit)
         apply_btn = QPushButton("下发")
+        apply_btn.setObjectName("Primary")
         apply_btn.clicked.connect(self._on_apply_setpoint)
         row.addWidget(apply_btn)
-        layout.addLayout(row)
+        body.addLayout(row)
 
         self._limit_hint = QLabel("")
         self._limit_hint.setObjectName("Hint")
-        layout.addWidget(self._limit_hint)
+        body.addWidget(self._limit_hint)
 
         self._update_setpoint_widgets(config.LoaderMode.CC)
-        return box
+        return card
 
-    def _build_action_box(self) -> QWidget:
-        box = QGroupBox("输出控制")
-        layout = QVBoxLayout(box)
-        layout.setSpacing(8)
-
-        self._banner = StatusBanner()
-        layout.addWidget(self._banner)
+    def _build_output_card(self) -> QWidget:
+        card = Card("输出")
+        body = card.body
 
         row = QHBoxLayout()
-        row.setSpacing(6)
+        row.setSpacing(8)
         self._run_btn = QPushButton("启动输出")
         self._run_btn.setObjectName("Success")
         self._run_btn.clicked.connect(lambda: self._client.op("run"))
@@ -316,32 +340,31 @@ class MainWindow(QMainWindow):
         self._stop_btn.clicked.connect(lambda: self._client.op("stop"))
         row.addWidget(self._run_btn, 1)
         row.addWidget(self._stop_btn, 1)
-        layout.addLayout(row)
+        body.addLayout(row)
 
         self._clear_btn = QPushButton("清除故障 (lclr)")
         self._clear_btn.clicked.connect(lambda: self._client.op("clear_fault"))
-        layout.addWidget(self._clear_btn)
+        body.addWidget(self._clear_btn)
 
         hint = QLabel("启动仅在无故障时有效；故障需先清除。")
         hint.setObjectName("Hint")
         hint.setWordWrap(True)
-        layout.addWidget(hint)
-        return box
+        body.addWidget(hint)
+        return card
 
-    def _build_fan_box(self) -> QWidget:
-        box = QGroupBox("风扇")
-        layout = QVBoxLayout(box)
-        layout.setSpacing(8)
+    def _build_fan_card(self) -> QWidget:
+        card = Card("风扇")
+        body = card.body
 
         row = QHBoxLayout()
-        row.setSpacing(6)
+        row.setSpacing(8)
         self._fan_on_btn = QPushButton("开")
         self._fan_on_btn.clicked.connect(lambda: self._client.op("fan_on"))
         self._fan_off_btn = QPushButton("关")
         self._fan_off_btn.clicked.connect(lambda: self._client.op("fan_off"))
-        row.addWidget(self._fan_on_btn)
-        row.addWidget(self._fan_off_btn)
-        layout.addLayout(row)
+        row.addWidget(self._fan_on_btn, 1)
+        row.addWidget(self._fan_off_btn, 1)
+        body.addLayout(row)
 
         row2 = QHBoxLayout()
         row2.setSpacing(6)
@@ -355,37 +378,36 @@ class MainWindow(QMainWindow):
         fan_set = QPushButton("设定")
         fan_set.clicked.connect(lambda: self._client.op("fan_percent", self._fan_slider.value()))
         row2.addWidget(fan_set)
-        layout.addLayout(row2)
+        body.addLayout(row2)
 
         self._fan_readout = ValueRow("状态", "—")
-        layout.addWidget(self._fan_readout)
-        return box
+        body.addWidget(self._fan_readout)
+        return card
 
-    def _build_record_box(self) -> QWidget:
-        box = QGroupBox("记录")
-        layout = QVBoxLayout(box)
-        layout.setSpacing(8)
+    def _build_record_card(self) -> QWidget:
+        card = Card("记录")
+        body = card.body
 
         self._record_btn = QPushButton("开始记录 CSV")
         self._record_btn.setCheckable(True)
         self._record_btn.clicked.connect(self._on_record_toggled)
-        layout.addWidget(self._record_btn)
+        body.addWidget(self._record_btn)
 
         row = QHBoxLayout()
-        row.setSpacing(6)
+        row.setSpacing(8)
         export_btn = QPushButton("导出…")
         export_btn.clicked.connect(self._on_export)
         replay_btn = QPushButton("回放…")
         replay_btn.clicked.connect(self._on_replay)
-        row.addWidget(export_btn)
-        row.addWidget(replay_btn)
-        layout.addLayout(row)
+        row.addWidget(export_btn, 1)
+        row.addWidget(replay_btn, 1)
+        body.addLayout(row)
 
         self._record_label = QLabel("未记录")
         self._record_label.setObjectName("Hint")
         self._record_label.setWordWrap(True)
-        layout.addWidget(self._record_label)
-        return box
+        body.addWidget(self._record_label)
+        return card
 
     # -- right column: status ---------------------------------------------
 
@@ -407,47 +429,47 @@ class MainWindow(QMainWindow):
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setFixedWidth(288)
+        scroll.setFixedWidth(300)
         scroll.setStyleSheet("QScrollArea { background: transparent; }")
         return scroll
 
     def _build_status_box(self) -> QWidget:
-        box = QGroupBox("状态")
-        layout = QVBoxLayout(box)
-        layout.setSpacing(4)
+        card = Card("状态")
+        body = card.body
+        body.setSpacing(4)
 
         self._row_state = ValueRow("状态")
         self._row_error = ValueRow("故障")
         self._row_mode = ValueRow("模式")
         self._row_active = ValueRow("当前设定")
-        layout.addWidget(self._row_state)
-        layout.addWidget(self._row_error)
-        layout.addWidget(self._row_mode)
-        layout.addWidget(self._row_active)
+        body.addWidget(self._row_state)
+        body.addWidget(self._row_error)
+        body.addWidget(self._row_mode)
+        body.addWidget(self._row_active)
 
         note = QLabel("电流为下发值（硬件闭环），非 ADC 采样。")
         note.setObjectName("Hint")
         note.setWordWrap(True)
-        layout.addWidget(note)
-        return box
+        body.addWidget(note)
+        return card
 
     def _build_output_box(self) -> QWidget:
-        box = QGroupBox("执行器读回")
-        layout = QVBoxLayout(box)
-        layout.setSpacing(4)
+        card = Card("执行器读回")
+        body = card.body
+        body.setSpacing(4)
 
         self._row_out_en = ValueRow("使能")
         self._row_out_i = ValueRow("Iref")
         self._row_out_v = ValueRow("Vref")
         self._row_out_norm = ValueRow("归一化")
         for row in (self._row_out_en, self._row_out_i, self._row_out_v, self._row_out_norm):
-            layout.addWidget(row)
-        return box
+            body.addWidget(row)
+        return card
 
     def _build_limits_box(self) -> QWidget:
-        box = QGroupBox("限值")
-        layout = QVBoxLayout(box)
-        layout.setSpacing(4)
+        card = Card("限值")
+        body = card.body
+        body.setSpacing(4)
 
         self._row_ocp = ValueRow("OCP", f"{config.OVERCURRENT_LIMIT:.2f} A")
         self._row_otp = ValueRow("OTP", f"{config.OVERTEMPERATURE_LIMIT:.0f} °C")
@@ -463,8 +485,8 @@ class MainWindow(QMainWindow):
             self._row_pmax,
             self._row_rmax,
         ):
-            layout.addWidget(row)
-        return box
+            body.addWidget(row)
+        return card
 
     # -- bottom tabs ------------------------------------------------------
 
@@ -590,6 +612,39 @@ class MainWindow(QMainWindow):
                 self._port_combo.setCurrentIndex(index)
 
     # ------------------------------------------------------------------
+    # Theme switching
+    # ------------------------------------------------------------------
+
+    def _update_theme_btn(self) -> None:
+        # The button advertises the theme it will switch *to*.
+        if theme.current_theme() == "light":
+            self._theme_btn.setText("☾ 深色")
+        else:
+            self._theme_btn.setText("☀ 浅色")
+
+    def _on_theme_toggled(self) -> None:
+        name = "dark" if theme.current_theme() == "light" else "light"
+        theme.apply(QApplication.instance(), name)
+        self._settings.setValue("theme", name)
+        self._restyle()
+
+    def _restyle(self) -> None:
+        """Refresh everything that carries inline (non-QSS) theme colours."""
+        self._update_theme_btn()
+        self._apply_title_style()
+        self._set_link_chip(self._connected, self._link_desc)
+        for card, channel in (
+            (self._read_voltage, "voltage"),
+            (self._read_current, "current"),
+            (self._read_power, "power"),
+            (self._read_resistance, "resistance"),
+            (self._read_temperature, "temperature"),
+        ):
+            card.restyle(theme.CH_COLOR[channel])
+        self._banner.update_from(self._snap if self._connected else None)
+        self._chart.restyle()
+
+    # ------------------------------------------------------------------
     # Slots
     # ------------------------------------------------------------------
 
@@ -603,7 +658,7 @@ class MainWindow(QMainWindow):
 
     def _connect_to(self, port: str | None, baudrate: int) -> None:
         self._settings.setValue("baudrate", baudrate)
-        self._link_label.setText("连接中…")
+        self._set_link_chip(False, "连接中…")
         self._client.connect_port(port, baudrate)
 
     @Slot(bool, str)
@@ -612,13 +667,13 @@ class MainWindow(QMainWindow):
         if connected:
             self._connect_btn.setText("断开")
             self._connect_btn.setObjectName("Danger")
-            self._link_label.setText(description)
+            self._set_link_chip(True, description)
             self._chart.clear()
             self._snap = LoaderSnapshot()
         else:
             self._connect_btn.setText("连接")
             self._connect_btn.setObjectName("Primary")
-            self._link_label.setText("未连接")
+            self._set_link_chip(False, "")
             self._banner.update_from(None)
         # Re-apply QSS so the objectName change takes effect.
         self._connect_btn.style().unpolish(self._connect_btn)
