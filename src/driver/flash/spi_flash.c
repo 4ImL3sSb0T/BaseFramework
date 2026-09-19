@@ -9,6 +9,7 @@
 #include "spi_flash.h"
 #include "spi.h"
 #include "main.h"
+#include "FreeRTOS.h"
 
 #define SPI_TIMEOUT 1000
 
@@ -35,26 +36,29 @@ uint8_t spi_flash_read_write_byte(uint8_t tx_data) {
 int spi_flash_write_read(const uint8_t *write_buf, size_t write_size,
                          uint8_t *read_buf, size_t read_size) {
     size_t total = write_size + read_size;
-    uint8_t tx[total];
-    uint8_t rx[total];
+    uint8_t* rx_buffer = pvPortMalloc(total);
+    uint8_t* tx_buffer = pvPortMalloc(total);
 
-    for (size_t i = 0; i < write_size; i++) {
-        tx[i] = write_buf[i];
+    if (tx_buffer == NULL || rx_buffer == NULL) {
+        vPortFree(tx_buffer);   /* heap_4 里 vPortFree(NULL) 是安全的 */
+        vPortFree(rx_buffer);
+        return -1;
     }
-    for (size_t i = 0; i < read_size; i++) {
-        tx[write_size + i] = 0xFF;
-    }
+
+    int rc = -1;
+    for (size_t i = 0; i < write_size; i++) tx_buffer[i] = write_buf[i];
+    for (size_t i = 0; i < read_size;  i++) tx_buffer[write_size + i] = 0xFF;
 
     spi_flash_cs_low();
-    HAL_StatusTypeDef st = HAL_SPI_TransmitReceive(&hspi2, tx, rx, total, SPI_TIMEOUT);
+    if (HAL_SPI_TransmitReceive(&hspi2, tx_buffer, rx_buffer, total, SPI_TIMEOUT) == HAL_OK) {
+        for (size_t i = 0; i < read_size; i++) read_buf[i] = rx_buffer[write_size + i];
+        rc = 0;
+    }
     spi_flash_cs_high();
 
-    if (st != HAL_OK) return -1;
-
-    for (size_t i = 0; i < read_size; i++) {
-        read_buf[i] = rx[write_size + i];
-    }
-    return 0;
+    vPortFree(rx_buffer);
+    vPortFree(tx_buffer);
+    return rc;
 }
 
 /* ── Init ────────────────────────────────────────────────────────────── */
