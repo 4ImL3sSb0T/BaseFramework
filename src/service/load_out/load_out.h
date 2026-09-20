@@ -43,7 +43,7 @@ exit_code_t load_out_set(float out_norm);
  * @brief 按电压设定输出 (V)
  * @param voltage 0 ~ LOAD_OUT_VOLTAGE_MAX
  */
-exit_code_t load_out_set_voltage(float voltage);
+exit_code_t load_out_set_ref_voltage(float voltage);
 
 /**
  * @brief 按电流设定输出 (A)
@@ -59,7 +59,7 @@ float load_out_get(void);
 /**
  * @brief 读取最近一次设定电压 (V)
  */
-float load_out_get_voltage(void);
+float load_out_get_ref_voltage(void);
 
 /**
  * @brief 读取最近一次设定电流 (A)

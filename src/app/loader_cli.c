@@ -200,7 +200,7 @@ int loader_cli_status(int argc, char *argv[])
     logPrintln("out    : en=%d  Iref=%.3fA  Vref=%.3fV  norm=%.4f",
                load_out_is_enabled() ? 1 : 0,
                (double)load_out_get_current(),
-               (double)load_out_get_voltage(),
+               (double)load_out_get_ref_voltage(),
                (double)load_out_get());
     logPrintln("fan    : en=%d  speed=%.0f%%  target=%.0f%%",
                fan_is_enabled() ? 1 : 0,
@@ -396,7 +396,7 @@ int loader_cli_out(int argc, char *argv[])
     logPrintln("load_out: en=%d  Iref=%.3fA  Vref=%.3fV  norm=%.4f  (raw scale %u)",
                load_out_is_enabled() ? 1 : 0,
                (double)load_out_get_current(),
-               (double)load_out_get_voltage(),
+               (double)load_out_get_ref_voltage(),
                (double)load_out_get(),
                (unsigned)LOAD_OUT_RESOLUTION);
     return 0;

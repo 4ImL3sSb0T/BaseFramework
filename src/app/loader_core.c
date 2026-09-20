@@ -46,7 +46,8 @@ static void loader_core_pid_reset_all(void)
 static void loader_core_apply_current(float i_target, float i_measurement)
 {
 #if LOADER_USE_SOFTWARE_CURRENT_PID
-    float out = pid_calculate(&pid_current, i_target, i_measurement);
+// i_target 是前馈控制量
+    float out = pid_calculate(&pid_current, i_target, i_measurement) + i_target;
     (void)load_out_set_current(out);
 #else
     (void)i_measurement;

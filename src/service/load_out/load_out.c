@@ -61,7 +61,7 @@ exit_code_t load_out_set(float out_norm)
     return bsp_dac_set_raw(load_out_norm_to_raw(out_norm));
 }
 
-exit_code_t load_out_set_voltage(float voltage)
+exit_code_t load_out_set_ref_voltage(float voltage)
 {
     voltage = load_out_clampf(voltage, 0.0f, LOAD_OUT_VOLTAGE_MAX);
     float norm = (LOAD_OUT_VOLTAGE_MAX > 0.0f) ? (voltage / LOAD_OUT_VOLTAGE_MAX) : 0.0f;
@@ -75,11 +75,11 @@ exit_code_t load_out_set_current(float current)
     }
 
     float voltage = current * LOAD_OUT_CURRENT_TO_VOLT;
-    exit_code_t ret = load_out_set_voltage(voltage);
+    exit_code_t ret = load_out_set_ref_voltage(voltage);
     if (ret == EXIT_OK && g_enabled) {
         /* 钳位后按实际输出电压回写，避免与 set 内反推不一致 */
         g_current_a = (LOAD_OUT_CURRENT_TO_VOLT > 0.0f)
-                          ? (load_out_get_voltage() / LOAD_OUT_CURRENT_TO_VOLT)
+                          ? (load_out_get_ref_voltage() / LOAD_OUT_CURRENT_TO_VOLT)
                           : 0.0f;
     } else if (!g_enabled) {
         g_current_a = 0.0f;
@@ -92,7 +92,7 @@ float load_out_get(void)
     return g_out_norm;
 }
 
-float load_out_get_voltage(void)
+float load_out_get_ref_voltage(void)
 {
     return g_out_norm * LOAD_OUT_VOLTAGE_MAX;
 }
